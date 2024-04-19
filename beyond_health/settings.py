@@ -20,6 +20,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 dotenv_file = BASE_DIR / '.env.local'
 
+MAX_OTP_TRY = 3
+MIN_PASSWORD_LENGTH = 8
+
 if path.isfile(dotenv_file):
     dotenv.load_dotenv(dotenv_file)
 
