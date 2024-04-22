@@ -6,19 +6,17 @@ from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
-
-from accounts.utils import send_otp
-
-from .models import UserAccount
-from .serializers import UserSerializer
-from .serializers import ClientUserSerializer
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
-    TokenRefreshView,
-    TokenVerifyView
 )
+
+from accounts.utils import send_otp
+from .models import UserAccount
+from .serializers import ClientUserSerializer
+from .serializers import UserSerializer
+
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -27,57 +25,58 @@ class UserViewSet(viewsets.ModelViewSet):
 
     queryset = UserAccount.objects.all()
     serializer_class = UserSerializer
-    authentication_classes = [] 
+    authentication_classes = []
     permission_classes = []
 
     @action(detail=True, methods=["PATCH"])
     def verify_otp(self, request, pk=None):
         instance = self.get_object()
-        password = request.data.get("password")  # Extract password from request data
+        # password = request.data.get("password")  # Extract password from request data
         if (
-            not instance.is_active
-            # create profiles for user
-            and instance.otp == request.data.get("otp")
-            and instance.otp_expiry
-            and timezone.now() < instance.otp_expiry
+                not instance.is_active
+                # create profiles for user
+                and instance.otp == request.data.get("otp")
+                and instance.otp_expiry
+                and timezone.now() < instance.otp_expiry
         ):
-        # create access refresh token
+            # create access refresh token
             instance.is_active = True
             instance.otp_expiry = None
             instance.max_otp_try = settings.MAX_OTP_TRY
             instance.otp_max_out = None
             instance.save()
-            
-            # # Generate new tokens
-            # refresh = RefreshToken.for_user(instance)
-            # access_token = str(refresh.access_token)
-            
-            # Use CustomTokenObtainPairView to generate tokens
-            # token_serializer = CustomTokenObtainPairSerializer(data={'username': instance.username, 'password': instance.password})
-            token_serializer = CustomTokenObtainPairSerializer(
-                data={'phone_number': instance.phone_number,
-                      'email': instance.email, 
-                      'password': password
-                      })
-            
-            token_serializer.is_valid(raise_exception=True)
-            tokens = token_serializer.validated_data
 
-            id = tokens['id']
-            email = tokens['email']
-            access_token = tokens['access']
-            refresh_token = tokens['refresh']
+            # # Generate new tokens
+            refresh = RefreshToken.for_user(instance)
+            access_token = str(refresh.access_token)
+
+            # Use CustomTokenObtainPairView to generate tokens
+            # token_serializer = CustomTokenObtainPairSerializer(data={'username': instance.username,
+            #                               'password': instance.password})
+            # token_serializer = CustomTokenObtainPairSerializer(
+            #     data={'phone_number': instance.phone_number,
+            #           'email': instance.email, 
+            #           'password': password
+            #           })
+
+            # token_serializer.is_valid(raise_exception=True)
+            # tokens = token_serializer.validated_data
+
+            # id = tokens['id']
+            # email = tokens['email']
+            # access_token = tokens['access']
+            # refresh_token = tokens['refresh']
 
             return Response(
                 {
                     "message": "Successfully verified the user.",
-                    "id": id,
-                    "email": email,
+                    # "id": id,
+                    # "email": email,
                     "access_token": access_token,
-                    # "refresh_token": str(refresh)
-                    "refresh_token": refresh_token
+                    "refresh_token": str(refresh)
+                    # "refresh_token": refresh_token
                 },
-                status=status.HTTP_200_OK            
+                status=status.HTTP_200_OK
             )
 
         return Response(
@@ -116,7 +115,8 @@ class UserViewSet(viewsets.ModelViewSet):
         instance.save()
         send_otp(instance.phone_number, otp)
         return Response("Successfully generate new OTP.", status=status.HTTP_200_OK)
-    
+
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
     def validate(self, attrs):
@@ -127,16 +127,16 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         for k, v in serializer.items():
             data[k] = v
 
-        #you can add your more data with this and return
+        # you can add your more data with this and return
         # data['first_name'] = self.user.first_name
         # data['last_name'] = self.user.last_name
 
         return data
 
-    
+
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
-    
+
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
 

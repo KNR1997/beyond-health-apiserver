@@ -3,9 +3,7 @@ import random
 from django.conf import settings
 from rest_framework import serializers
 from accounts.utils import send_otp
-
 from .models import UserAccount
-
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -53,7 +51,6 @@ class UserSerializer(serializers.ModelSerializer):
         if data["password1"] != data["password2"]:
             raise serializers.ValidationError("Passwords do not match")
         return data
-    
 
     def create(self, validated_data):
         """
@@ -75,6 +72,7 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
         send_otp(validated_data["phone_number"], otp)
         return user
+
 
 class ClientUserSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField(read_only=True)
