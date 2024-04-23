@@ -1,7 +1,8 @@
 from django.core.paginator import Paginator
-from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 from products.models import Product
 from products.serializers import ProductSerializer
@@ -155,3 +156,30 @@ def update_product(request, pk):
         return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def get_product_by_slug(request, slug):
+    try:
+        # Retrieve the product based on the provided slug
+        product = get_object_or_404(Product, slug=slug)
+
+        # Retrieve related products
+        related_products = Product.objects.filter(type__slug=product.type.slug)[:20]
+
+        # Serialize the product and related products
+        product_serializer = ProductSerializer(product)
+        related_products_serializer = ProductSerializer(related_products, many=True)
+
+        # Construct the response data using dictionary unpacking
+        response_data = {
+            **product_serializer.data,
+            'related_products': related_products_serializer.data
+        }
+
+        return Response(response_data)
+
+    except Product.DoesNotExist:
+        return Response({'error': 'Product not found'}, status=404)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)

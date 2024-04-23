@@ -30,6 +30,7 @@ class Product(models.Model):
     # shop = models.ForeignKey(Shop, on_delete=models.CASCADE, default=None)  # Add this field
     sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     language = models.CharField(max_length=10)
+    translated_languages = models.JSONField(default=list)  # New field for translated languages
     min_price = models.DecimalField(max_digits=10, decimal_places=2)
     max_price = models.DecimalField(max_digits=10, decimal_places=2)
     sku = models.CharField(max_length=50)  # unidentified attribute
