@@ -183,3 +183,18 @@ def get_product_by_slug(request, slug):
         return Response({'error': 'Product not found'}, status=404)
     except Exception as e:
         return Response({'error': str(e)}, status=500)
+
+
+@api_view(['DELETE'])
+def delete_product(request, pk):
+    try:
+        # Retrieve the product instance from the database
+        product = get_object_or_404(Product, pk=pk)
+
+        # Delete the product
+        product.delete()
+
+        return Response({'message': 'Product deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
