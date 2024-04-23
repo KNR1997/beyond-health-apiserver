@@ -135,3 +135,23 @@ def get_products(request):
 
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['PUT'])
+def update_product(request, pk):
+    try:
+        # Retrieve the product instance from the database
+        product = Product.objects.get(pk=pk)
+
+        # Deserialize the request data to update the product instance
+        serializer = ProductSerializer(instance=product, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()  # Save the updated product instance
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    except Product.DoesNotExist:
+        return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
