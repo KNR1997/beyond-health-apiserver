@@ -52,6 +52,7 @@ class Product(models.Model):
     slug = models.CharField(max_length=255)
     description = models.TextField()  # Modify to TextField to accommodate longer descriptions
     type = models.ForeignKey(Type, on_delete=models.CASCADE, default=None)  # Add this field
+    categories = models.ManyToManyField(Category)  # Many-to-many relationship with Category
     price = models.DecimalField(max_digits=10, decimal_places=2)
     sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     min_price = models.DecimalField(max_digits=10, decimal_places=2, null=True)

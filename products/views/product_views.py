@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from products.models import Product
-from products.serializers import ProductSerializer, CreateProductSerializer
+from products.serializers import ProductSerializer, CreateProductSerializer, ProductDetailSerializer
 
 
 # Create your views here.
@@ -68,7 +68,7 @@ def get_products(request):
         paginated_products = paginator.get_page(page)
 
         # Serialize the paginated products
-        serializer = ProductSerializer(paginated_products, many=True)
+        serializer = ProductDetailSerializer(paginated_products, many=True)
 
         # Construct next page URL
         next_page_url = None
