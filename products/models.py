@@ -11,7 +11,7 @@ class Type(models.Model):
     name = models.CharField(max_length=20)
     language = models.CharField(max_length=10)
     translated_languages = models.JSONField(default=list)  # Add translated_languages field
-    slug = models.CharField(max_length=20)
+    slug = models.CharField(max_length=20, unique=True)
     banners = models.JSONField(default=list)
     promotional_sliders = models.JSONField(default=list)
     settings = models.JSONField(default=dict)
@@ -49,7 +49,7 @@ class Category(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=255)
-    slug = models.CharField(max_length=255, default='default-slug')  # Add this field
+    slug = models.CharField(max_length=255)
     description = models.TextField()  # Modify to TextField to accommodate longer descriptions
     type = models.ForeignKey(Type, on_delete=models.CASCADE, default=None)  # Add this field
     price = models.DecimalField(max_digits=10, decimal_places=2)

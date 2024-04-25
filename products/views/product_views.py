@@ -95,8 +95,27 @@ def create_product(request):
     try:
         serializer = CreateProductSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            data = serializer.data
+            slug = data.get('slug')
+
+            # check if a product with the same slug already exists
+            if Product.objects.filter(slug=slug).exists():
+                # If a product with the same slug exists, append a suffix
+                suffix = 1
+                new_slug = f"{slug}-{suffix}"
+                # Keep incrementing the suffix until a unique slug is found
+                while Product.objects.filter(slug=new_slug).exists():
+                    suffix += 1
+                    new_slug = f"{slug}-{suffix}"
+                # Update the slug with the unique value
+                data['slug'] = new_slug
+
+            serializer = CreateProductSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
