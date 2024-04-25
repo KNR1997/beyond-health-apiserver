@@ -2,7 +2,13 @@ from decimal import Decimal
 
 from rest_framework import serializers
 
-from products.models import Product
+from products.models import Product, Type
+
+
+class TypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Type
+        fields = '__all__'
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -22,5 +28,5 @@ class ProductSerializer(serializers.ModelSerializer):
 class CreateProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['id', 'name', 'slug', 'description', 'price', 'max_price', 'min_price', 'quantity', 'status', 'type',
-                  'image', 'gallery', 'product_type', 'sku', 'unit', 'translated_languages', 'discount', 'created_by']
+        fields = ['id', 'name', 'slug', 'description', 'price', 'quantity', 'status', 'type',
+                  'image', 'gallery', 'product_type', 'sku', 'unit', 'translated_languages', 'created_by']

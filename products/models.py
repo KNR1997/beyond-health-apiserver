@@ -27,24 +27,22 @@ class Product(models.Model):
     description = models.TextField()  # Modify to TextField to accommodate longer descriptions
     type = models.ForeignKey(Type, on_delete=models.CASCADE, default=None)  # Add this field
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    # shop = models.ForeignKey(Shop, on_delete=models.CASCADE, default=None)  # Add this field
     sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
-    language = models.CharField(max_length=10)
-    translated_languages = models.JSONField(default=list)  # New field for translated languages
-    min_price = models.DecimalField(max_digits=10, decimal_places=2)
-    max_price = models.DecimalField(max_digits=10, decimal_places=2)
-    sku = models.CharField(max_length=50)  # unidentified attribute
+    min_price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    max_price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     quantity = models.PositiveIntegerField()
-    in_stock = models.BooleanField(default=True)
-    is_taxable = models.BooleanField(default=False)
-    # shipping class foreignKey
     status = models.CharField(max_length=20, default='publish')  # Add status field with default value
     product_type = models.CharField(max_length=20, default='simple')
     unit = models.CharField(max_length=50)
-    discount = models.DecimalField(max_digits=5, decimal_places=2)
+    sku = models.CharField(max_length=50)  # unidentified attribute
+    in_stock = models.BooleanField(default=True)
+    is_taxable = models.BooleanField(default=False)
+    popular_product = models.BooleanField(default=False)
+    language = models.CharField(max_length=10, default='en')
+    translated_languages = models.JSONField(default=["en"])  # New field for translated languages
+    discount = models.DecimalField(max_digits=5, decimal_places=2, null=True)
     image = models.JSONField(default=dict)  # Add this field
     gallery = models.JSONField(default=list)  # Add this field
-    popular_product = models.BooleanField(default=False)
     created_by = models.ForeignKey(UserAccount, related_name='products_created', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)  # Automatically set when a new object is created
     updated_by = models.ForeignKey(UserAccount, related_name='products_updated', on_delete=models.CASCADE, null=True,
@@ -53,3 +51,11 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+
+# class ProductImage(models.Model):
+#     title = models.CharField(max_length=255)
+#     alt_name = models.CharField(max_length=255)
+#     # image = models.ImageField(upload_to='products/%Y/%m/%d')
+#     uploaded_by = models.ForeignKey(UserAccount, related_name='images', on_delete=models.CASCADE)
+#     uploaded_at = models.DateTimeField(auto_now_add=True)

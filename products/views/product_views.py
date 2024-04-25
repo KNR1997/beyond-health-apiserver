@@ -13,54 +13,6 @@ from products.serializers import ProductSerializer, CreateProductSerializer
 
 @api_view(['GET'])
 def get_products(request):
-    # try:
-    #     # Get query parameters
-    #     query_params = request.query_params
-    #     limit = int(query_params.get('limit', 30))
-    #     page = int(query_params.get('page', 1))
-    #     search = query_params.get('searchJoin')
-    #
-    #     # Get all the products
-    #     products = Product.objects.all()
-    #
-    #     # Apply search filter
-    #     search_filters = {}
-    #     for param in search.split(';'):
-    #         key, value = param.split(':')
-    #         if key == 'type.slug':  # Check if the key is 'type.slug'
-    #             search_filters['type__slug'] = value  # Use '__' to traverse the relationship
-    #         elif key != 'slug':
-    #             search_filters[key] = value
-    #
-    #     # Then apply the filters to the queryset
-    #     products = products.filter(**search_filters)
-    #
-    #     # Paginate results
-    #     paginator = Paginator(products, limit)
-    #     paginated_products = paginator.get_page(page)
-    #
-    #     # Serialize the paginated products
-    #     serializer = ProductSerializer(paginated_products, many=True)
-    #
-    #     # Construct next page URL
-    #     next_page_url = None
-    #     if paginated_products.has_next():
-    #         next_page_url = f"{request.path}?{query_params.urlencode()}&page={page + 1}"
-    #
-    #     # Construct previous page URL
-    #     previous_page_url = None
-    #     if paginated_products.has_previous():
-    #         previous_page_url = f"{request.path}?{query_params.urlencode()}&page={page - 1}"
-    #
-    #     return Response({
-    #         'data': serializer.data,
-    #         'next': next_page_url,
-    #         'previous': previous_page_url
-    #     })
-    #
-    # except Exception as e:
-    #     return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
     try:
         # Get query parameters
         query_params = request.query_params

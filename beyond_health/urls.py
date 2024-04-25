@@ -3,7 +3,6 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from accounts import views
-from products.views import get_products
 
 router = DefaultRouter()
 router.register("user", views.UserViewSet, basename="user")
