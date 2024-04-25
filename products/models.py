@@ -21,6 +21,32 @@ class Type(models.Model):
         return self.name
 
 
+class Category(models.Model):
+    name = models.CharField(max_length=255)
+    slug = models.CharField(max_length=255)
+    icon = models.CharField(max_length=255, null=True, blank=True)
+    image = models.JSONField(default=list)  # Assuming it's a JSON field
+    details = models.TextField(null=True, blank=True)
+    language = models.CharField(max_length=10, default='en')
+    # translated_languages = models.JSONField(default=["en"])  # New field for translated languages
+    translated_languages = models.JSONField(default=list, blank=True)  # Use a callable for default value
+    parent = models.ForeignKey('self', related_name='children', null=True, blank=True, on_delete=models.CASCADE)
+    type_id = models.IntegerField()
+    created_by = models.ForeignKey(UserAccount, related_name='category_created', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)  # Automatically set when a new object is created
+    updated_by = models.ForeignKey(UserAccount, related_name='category_updated', on_delete=models.CASCADE, null=True,
+                                   blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    products_count = models.IntegerField()
+
+    def __str__(self):
+        return self.name
+
+    @staticmethod
+    def default_translated_languages():
+        return ["en"]
+
+
 class Product(models.Model):
     name = models.CharField(max_length=255)
     slug = models.CharField(max_length=255, default='default-slug')  # Add this field
@@ -51,7 +77,6 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
-
 
 # class ProductImage(models.Model):
 #     title = models.CharField(max_length=255)

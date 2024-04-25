@@ -2,12 +2,18 @@ from decimal import Decimal
 
 from rest_framework import serializers
 
-from products.models import Product, Type
+from products.models import Product, Type, Category
 
 
 class TypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Type
+        fields = '__all__'
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
         fields = '__all__'
 
 
