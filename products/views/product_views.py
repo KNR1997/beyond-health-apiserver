@@ -90,37 +90,91 @@ def get_products(request):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@api_view(['POST'])
-def create_product(request):
-    try:
-        serializer = CreateProductSerializer(data=request.data)
-        if serializer.is_valid():
-            data = serializer.data
-            slug = data.get('slug')
+# @api_view(['POST'])
+# def create_product(request):
+#     try:
+#         serializer = CreateProductSerializer(data=request.data)
+#         if serializer.is_valid():
+#             data = serializer.data
+#             slug = data.get('slug')
+#
+#             # check if a product with the same slug already exists
+#             if Product.objects.filter(slug=slug).exists():
+#                 # If a product with the same slug exists, append a suffix
+#                 suffix = 1
+#                 new_slug = f"{slug}-{suffix}"
+#                 # Keep incrementing the suffix until a unique slug is found
+#                 while Product.objects.filter(slug=new_slug).exists():
+#                     suffix += 1
+#                     new_slug = f"{slug}-{suffix}"
+#                 # Update the slug with the unique value
+#                 data['slug'] = new_slug
+#
+#             serializer = CreateProductSerializer(data=data)
+#             if serializer.is_valid():
+#                 serializer.save()
+#                 return Response(serializer.data, status=status.HTTP_201_CREATED)
+#             else:
+#                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#     except Exception as e:
+#         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#
 
-            # check if a product with the same slug already exists
-            if Product.objects.filter(slug=slug).exists():
-                # If a product with the same slug exists, append a suffix
-                suffix = 1
-                new_slug = f"{slug}-{suffix}"
-                # Keep incrementing the suffix until a unique slug is found
-                while Product.objects.filter(slug=new_slug).exists():
-                    suffix += 1
-                    new_slug = f"{slug}-{suffix}"
-                # Update the slug with the unique value
-                data['slug'] = new_slug
-
-            serializer = CreateProductSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+# @api_view(['POST'])
+# def create_product(request):
+#     try:
+#         serializer = CreateProductSerializer(data=request.data)
+#         if serializer.is_valid():
+#             data = serializer.validated_data
+#
+#             # Extract product data
+#             product_data = {
+#                 'name': data.get('name'),
+#                 'description': data.get('description'),
+#                 'price': data.get('price'),
+#                 'quantity': data.get('quantity'),
+#                 'status': data.get('status'),
+#                 'product_type': data.get('product_type'),
+#                 'sku': data.get('sku'),
+#                 'unit': data.get('unit'),
+#                 'translated_languages': data.get('translated_languages'),
+#                 'created_by': data.get('created_by')
+#             }
+#
+#             # Create the base product (SimpleProduct)
+#             product_serializer = ProductSerializer(data=product_data)
+#             if product_serializer.is_valid():
+#                 product_instance = product_serializer.save()
+#
+#                 if data.get('product_type') == 'variable':
+#                     # Handle variable product (with variations)
+#                     variations_data = data.get('variations', [])
+#                     for variation_data in variations_data:
+#                         variation = {
+#                             'product': product_instance.id,
+#                             'attribute': variation_data.get('attribute'),
+#                             'value': variation_data.get('value'),
+#                             'price': variation_data.get('price'),
+#                             'quantity': variation_data.get('quantity')
+#                         }
+#                         variation_serializer = ProductVariationSerializer(data=variation)
+#                         if variation_serializer.is_valid():
+#                             variation_serializer.save()
+#                         else:
+#                             product_instance.delete()  # Rollback product creation
+#                             return Response(variation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
+#                 return Response(product_serializer.data, status=status.HTTP_201_CREATED)
+#             else:
+#                 return Response(product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
+#     except Exception as e:
+#         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#
 
 @api_view(['PUT'])
 def update_product(request, pk):
