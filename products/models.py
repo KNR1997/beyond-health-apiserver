@@ -51,7 +51,7 @@ class Category(models.Model):
         return ["en"]
 
 
-class Product(models.Model):
+class BaseProduct(models.Model):
     name = models.CharField(max_length=255)
     slug = models.CharField(max_length=255)
     description = models.TextField()  # Modify to TextField to accommodate longer descriptions
@@ -78,9 +78,9 @@ class Variant(models.Model):
     language = models.CharField(max_length=10)
     translated_languages = models.JSONField(default=list)
     slug = models.CharField(max_length=255)
-    created_by = models.ForeignKey(UserAccount, related_name='attributes_created', on_delete=models.CASCADE)
+    created_by = models.ForeignKey(UserAccount, related_name='variant_created', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)  # Automatically set when a new object is created
-    updated_by = models.ForeignKey(UserAccount, related_name='attributes_updated', on_delete=models.CASCADE, null=True,
+    updated_by = models.ForeignKey(UserAccount, related_name='variant_updated', on_delete=models.CASCADE, null=True,
                                    blank=True)
     updated_at = models.DateTimeField(auto_now=True)  # Automatically set whenever the object is saved
 
@@ -89,12 +89,14 @@ class Variant(models.Model):
 
 
 class VariantOption(models.Model):
-    attribute = models.ForeignKey(Variant, related_name='variant', on_delete=models.CASCADE)
+    variant = models.ForeignKey(Variant, related_name='variant', on_delete=models.CASCADE)
+    variant_name = models.CharField(max_length=255)
     value = models.CharField(max_length=255)
     slug = models.CharField(max_length=255)
     meta = models.CharField(max_length=255)
     language = models.CharField(max_length=10)
     translated_languages = models.JSONField(default=list)
+    first_letters = models.CharField(max_length=3, blank=True)  # New field for storing first letters
     created_by = models.ForeignKey(UserAccount, related_name='variant_option_created', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)  # Automatically set when a new object is created
     updated_by = models.ForeignKey(UserAccount, related_name='variant_option_updated', on_delete=models.CASCADE,
@@ -106,27 +108,46 @@ class VariantOption(models.Model):
         return self.value
 
 
-class ProductVariantOption(models.Model):
-    product = models.ForeignKey(Product, related_name='product', on_delete=models.CASCADE)
-    variant = models.ForeignKey(Variant, related_name='product_variant', on_delete=models.CASCADE)
-    variant_option = models.ForeignKey(VariantOption, related_name='product_variant_option', on_delete=models.CASCADE)
-    value = models.CharField(max_length=255)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
-    min_price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
-    max_price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+class BaseProductVariant(models.Model):
+    product = models.ForeignKey(BaseProduct, related_name='product_in_variant_option', on_delete=models.CASCADE)
+    product_name = models.CharField(max_length=255)
+    variant = models.ForeignKey(Variant, related_name='variant_in_variant_option', on_delete=models.CASCADE)
+    variant_name = models.CharField(max_length=255)
+
+
+class BaseProductVariantOption(models.Model):
+    productVariationOption = models.ForeignKey(BaseProductVariant, related_name='product_variant_option_value',
+                                               on_delete=models.CASCADE)
+    variant_option = models.ForeignKey(VariantOption, related_name='product_variant_option_value',
+                                       on_delete=models.CASCADE)
+    product_name = models.CharField(max_length=255)
+    variant_name = models.CharField(max_length=255)
+    variant_option_name = models.CharField(max_length=255)
+
+
+class Product(models.Model):
+    product = models.ForeignKey(BaseProduct, related_name='product_combination', on_delete=models.CASCADE)
+    combination_string = models.CharField(max_length=255)
+    price = models.FloatField()
+    sale_price = models.FloatField(null=True)
+    min_price = models.FloatField(null=True)
+    max_price = models.FloatField(null=True)
     status = models.CharField(max_length=20, default='publish')  # Add status field with default value
     popular_product = models.BooleanField(default=False)
-    discount = models.DecimalField(max_digits=5, decimal_places=2, null=True)
+    discount = models.FloatField(null=True)
     in_stock = models.BooleanField(default=True)
-    is_taxable = models.BooleanField(default=False)
-    quantity = models.PositiveIntegerField()
-    created_by = models.ForeignKey(UserAccount, related_name='product_variant_option_created', on_delete=models.CASCADE)
+    unique_string_id = models.CharField(max_length=255)
+    available_stock = models.IntegerField()
+    created_by = models.ForeignKey(UserAccount, related_name='product_combination_created', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)  # Automatically set when a new object is created
-    updated_by = models.ForeignKey(UserAccount, related_name='product_variant_option_updated', on_delete=models.CASCADE,
+    updated_by = models.ForeignKey(UserAccount, related_name='product_combination_updated', on_delete=models.CASCADE,
                                    null=True,
                                    blank=True)
     updated_at = models.DateTimeField(auto_now=True)  # Automatically set whenever the object is saved
 
-    def __str__(self):
-        return f"{self.product.name} - {self.value}"
+
+class ProductStock(models.Model):
+    productCombination = models.ForeignKey(Product, related_name='product_stock', on_delete=models.CASCADE)
+    total_stock = models.IntegerField()
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
