@@ -4,9 +4,10 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from products.models import Product, VariantOption, BaseProductVariant
+from products.models import Product, VariantOption, BaseProductVariant, BaseProduct
 from products.serializers import BaseProductSerializer, CreateProductSerializer, ProductDetailSerializer, \
-    ProductionCombinationSerializer, ProductVariantOptionSerializer, ProductVariantOptionValueSerializer
+    ProductionCombinationSerializer, ProductVariantOptionSerializer, ProductVariantOptionValueSerializer, \
+    ProductPagedDataSerializer
 
 
 # Create your views here.
@@ -53,8 +54,8 @@ def get_products(request):
         #     products = products.select_related(*with_fields)
 
         # Apply language filter if provided
-        if language:
-            products = products.filter(language=language)
+        # if language:
+        #     products = products.filter(language=language)
 
         # Apply sorting
         if sorted_by == 'asc':
@@ -68,8 +69,27 @@ def get_products(request):
         paginator = Paginator(products, limit)
         paginated_products = paginator.get_page(page)
 
+        # Prepare data to serialize
+        serialized_data = []
+        for product in paginated_products:
+            # Retrieve Base_product details for each product
+            base_product = BaseProduct.objects.get(pk=product.product_id)  # Adjust based on your model relationships
+
+            # Construct combined data object
+            combined_data = {
+                'id': product.id,
+                'name': base_product.name,
+                'description': base_product.description,
+                'price': product.price,
+                'sale_price': product.sale_price,
+                'min_price': product.min_price,
+                'quantity': product.quantity,
+                'status': product.status,
+            }
+            serialized_data.append(combined_data)
+
         # Serialize the paginated products
-        serializer = ProductDetailSerializer(paginated_products, many=True)
+        serializer = ProductPagedDataSerializer(serialized_data, many=True)
 
         # Construct next page URL
         next_page_url = None

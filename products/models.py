@@ -137,6 +137,7 @@ class Product(models.Model):
     discount = models.FloatField(null=True)
     in_stock = models.BooleanField(default=True)
     unique_string_id = models.CharField(max_length=255)
+    quantity = models.IntegerField()
     available_stock = models.IntegerField()
     created_by = models.ForeignKey(UserAccount, related_name='product_combination_created', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)  # Automatically set when a new object is created

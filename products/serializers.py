@@ -18,20 +18,6 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class BaseProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BaseProduct
-        fields = ['id', 'name', 'slug', 'description', 'type', 'product_type', 'language',
-                  'translated_languages', 'created_by']
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data['price'] = Decimal(data['price'])
-        # data['max_price'] = Decimal(data['max_price'])
-        # data['min_price'] = Decimal(data['min_price'])
-        return data
-
-
 class VariantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Variant
@@ -51,6 +37,58 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data['price'] = Decimal(data['price'])
         return data
+
+
+class BaseProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BaseProduct
+        fields = ['id', 'name', 'slug', 'description', 'type', 'product_type', 'language',
+                  'translated_languages', 'created_by']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['price'] = Decimal(data['price'])
+        # data['max_price'] = Decimal(data['max_price'])
+        # data['min_price'] = Decimal(data['min_price'])
+        return data
+
+
+# class ProductPagedDataSerializer(serializers.ModelSerializer):
+#     name = serializers.SerializerMethodField()
+#
+#     class Meta:
+#         model = Product
+#         fields = ['id', 'price', 'sale_price', 'min_price', 'name']
+#
+#     def get_name(self, product):
+#         base_product_data = product.get('base_product')
+#
+#         if base_product_data:
+#             return base_product_data.get('name')
+#         return None
+
+class ProductPagedDataSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    description = serializers.CharField()
+    price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    sale_price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    min_price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    status = serializers.CharField()
+    quantity = serializers.IntegerField()
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['price'] = Decimal(data['price'])
+        return data
+
+    def create(self, validated_data):
+        # This method is not needed for serialization
+        pass
+
+    def update(self, instance, validated_data):
+        # This method is not needed for serialization
+        pass
 
 
 class ProductionCombinationSerializer(serializers.ModelSerializer):
