@@ -61,7 +61,12 @@ class BaseProduct(models.Model):
     language = models.CharField(max_length=10, default='en')
     translated_languages = models.JSONField(default=["en"])  # New field for translated languages
     image = models.JSONField(default=dict)  # Add this field
+    price = models.FloatField(null=True)
+    min_price = models.FloatField(null=True)
+    max_price = models.FloatField(null=True)
     gallery = models.JSONField(default=list)  # Add this field
+    status = models.CharField(max_length=20, default='publish')  # Add status field with default value
+    quantity = models.IntegerField(default=1)
     created_by = models.ForeignKey(UserAccount, related_name='products_created', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)  # Automatically set when a new object is created
     updated_by = models.ForeignKey(UserAccount, related_name='products_updated', on_delete=models.CASCADE, null=True,
@@ -129,6 +134,7 @@ class Product(models.Model):
     product = models.ForeignKey(BaseProduct, related_name='product_combination', on_delete=models.CASCADE)
     combination_string = models.CharField(max_length=255)
     price = models.FloatField()
+    title = models.CharField(max_length=155)
     sale_price = models.FloatField(null=True)
     min_price = models.FloatField(null=True)
     max_price = models.FloatField(null=True)
@@ -138,7 +144,7 @@ class Product(models.Model):
     in_stock = models.BooleanField(default=True)
     unique_string_id = models.CharField(max_length=255)
     quantity = models.IntegerField()
-    available_stock = models.IntegerField()
+    # available_stock = models.IntegerField()
     created_by = models.ForeignKey(UserAccount, related_name='product_combination_created', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)  # Automatically set when a new object is created
     updated_by = models.ForeignKey(UserAccount, related_name='product_combination_updated', on_delete=models.CASCADE,

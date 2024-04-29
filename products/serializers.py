@@ -3,7 +3,7 @@ from decimal import Decimal
 from rest_framework import serializers
 
 from products.models import BaseProduct, Type, Category, Variant, Product, BaseProductVariant, \
-    BaseProductVariantOption
+    BaseProductVariantOption, VariantOption
 
 
 class TypeSerializer(serializers.ModelSerializer):
@@ -24,6 +24,28 @@ class VariantSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class VariantOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VariantOption
+        fields = '__all__'
+
+
+class VariantPagedDataSerializer(serializers.ModelSerializer):
+    values = VariantOptionSerializer(many=True)
+
+    class Meta:
+        model = Variant
+        fields = ['id', 'language', 'name', 'shop_id', 'slug', 'translated_languages', 'values']
+
+    # id = serializers.IntegerField()
+    # language = serializers.CharField()
+    # name = serializers.CharField()
+    # shop_id = serializers.IntegerField()
+    # slug = serializers.CharField()
+    # translated_languages = serializers.CharField()
+    # values = variantOptions
+
+
 class ProductDetailSerializer(serializers.ModelSerializer):
     type = TypeSerializer()  # Nested TypeSerializer
     categories = CategorySerializer(many=True)  # Nested CategorySerializer
@@ -42,14 +64,17 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 class BaseProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = BaseProduct
-        fields = ['id', 'name', 'slug', 'description', 'type', 'product_type', 'language',
-                  'translated_languages', 'created_by']
+        fields = ['id', 'name', 'slug', 'description', 'type', 'product_type', 'language', 'price',
+                  'translated_languages', 'created_by', 'quantity']
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data['price'] = Decimal(data['price'])
-        # data['max_price'] = Decimal(data['max_price'])
-        # data['min_price'] = Decimal(data['min_price'])
+        price = data.get('price')  # Retrieve 'price' from data
+
+        # Check if 'price' is not None before attempting conversion
+        if price is not None:
+            data['price'] = Decimal(price)
+
         return data
 
 
@@ -71,16 +96,23 @@ class ProductPagedDataSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
     description = serializers.CharField()
-    price = serializers.DecimalField(max_digits=10, decimal_places=2)
-    sale_price = serializers.DecimalField(max_digits=10, decimal_places=2)
-    min_price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    product_type = serializers.CharField()
+    slug = serializers.CharField()
+    price = serializers.FloatField()
+    max_price = serializers.FloatField()
+    min_price = serializers.FloatField()
     status = serializers.CharField()
     quantity = serializers.IntegerField()
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data['price'] = Decimal(data['price'])
-        return data
+    # def to_representation(self, instance):
+    #     # Call superclass method to get the default representation
+    #     data = super().to_representation(instance)
+    #     # Convert 'max_price' and 'min_price' fields to Decimal if they exist in data
+    #     if 'max_price' in data:
+    #         data['max_price'] = Decimal(data['max_price'])
+    #     if 'min_price' in data:
+    #         data['min_price'] = Decimal(data['min_price'])
+    #     return data
 
     def create(self, validated_data):
         # This method is not needed for serialization
@@ -95,7 +127,8 @@ class ProductionCombinationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'product', 'combination_string', 'price', 'sale_price', 'min_price', 'max_price', 'status',
-                  'popular_product', 'discount', 'in_stock', 'unique_string_id', 'available_stock', 'created_by']
+                  'popular_product', 'discount', 'in_stock', 'created_by',
+                  'quantity']
 
         # read_only_fields = ['id', 'created_by', 'updated_at']
 

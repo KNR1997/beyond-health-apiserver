@@ -1,15 +1,15 @@
 from rest_framework.response import Response
 from rest_framework import status
 from django.core.paginator import Paginator
-from products.models import Variant
-from products.serializers import VariantSerializer
+from products.models import Variant, VariantOption
+from products.serializers import VariantSerializer, VariantPagedDataSerializer
 from django.db.models import Q
 
 from rest_framework.decorators import api_view
 
 
 @api_view(['GET'])
-def get_variants(request):
+def get_attributes(request):
     try:
         # Get query parameters
         query_params = request.query_params
@@ -43,7 +43,7 @@ def get_variants(request):
 
         # Apply language filter if provided
         if language:
-            attributes = attributes.filter(language=language)
+            attributes = variants.filter(language=language)
 
         # Apply sorting
         # if sorted_by == 'asc':
@@ -54,20 +54,39 @@ def get_variants(request):
         # attributes = attributes.order_by(order_by)
 
         # Paginate results
-        paginator = Paginator(attributes, limit)
-        paginated_attributes = paginator.get_page(page)
+        paginator = Paginator(variants, limit)
+        paginated_variants = paginator.get_page(page)
 
-        # Serialize the paginated attributes
-        serializer = VariantSerializer(paginated_attributes, many=True)
+        # Prepare data to serialize
+        serialized_data = []
+        for variant in paginated_variants:
+            # Retrieve Variant_options details for each product
+            variant_options = VariantOption.objects.filter(variant=variant)  # Adjust based on your model relationships
+
+            # Construct combined data object
+            combined_data = {
+                'id': variant.id,
+                'language': variant.language,
+                'name': variant.name,
+                'shop_id': variant.shop_id,
+                'slug': variant.slug,
+                'translated_languages': variant.translated_languages,
+                'values': variant_options,
+            }
+            serialized_data.append(combined_data)
+
+
+        # Serialize the paginated variants
+        serializer = VariantPagedDataSerializer(serialized_data, many=True)
 
         # Construct next page URL
         next_page_url = None
-        if paginated_attributes.has_next():
+        if paginated_variants.has_next():
             next_page_url = f"{request.path}?{request.query_params.urlencode()}&page={page + 1}"
 
         # Construct previous page URL
         previous_page_url = None
-        if paginated_attributes.has_previous():
+        if paginated_variants.has_previous():
             previous_page_url = f"{request.path}?{request.query_params.urlencode()}&page={page - 1}"
 
         # return Response({

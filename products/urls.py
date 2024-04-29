@@ -13,6 +13,6 @@ urlpatterns = [
 
     path('categories_v2/', category_views.get_categories, name='get_categories'),
 
-    # path('attributes_v2/', attribute_views.get_attributes, name='get_attributes'),
+    path('attributes_v2/', attribute_views.get_attributes, name='get_attributes'),
 
 ]
