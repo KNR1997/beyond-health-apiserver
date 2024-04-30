@@ -4,10 +4,12 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from products.models import Product, VariantOption, BaseProductVariant, BaseProduct, Variant, BaseProductVariantOption
+from products.models import Product, VariantOption, BaseProductVariant, BaseProduct, Variant, BaseProductVariantOption, \
+    Type
 from products.serializers import BaseProductSerializer, CreateProductSerializer, ProductionCombinationSerializer, \
-    ProductVariantOptionSerializer, ProductPagedDataSerializer, ProductVariantOptionValueSerializer, VariantSerializer, \
-    VariantOptionSerializer
+    ProductVariantOptionSerializer, ProductsPagedDataSerializer, ProductVariantOptionValueSerializer, ProductSerializer, \
+    VariantOptionSerializer, CustomVariantOptionSerializer, BaseProductPagedDataSerializer, TypeSerializer, \
+    CategorySerializer
 
 
 # Create your views here.
@@ -95,7 +97,7 @@ def get_products(request):
             serialized_data.append(combined_data)
 
         # Serialize the paginated products
-        serializer = ProductPagedDataSerializer(serialized_data, many=True)
+        serializer = ProductsPagedDataSerializer(serialized_data, many=True)
 
         # Construct next page URL
         next_page_url = None
@@ -304,34 +306,79 @@ def get_product_by_slug(request, slug):
         base_product = get_object_or_404(BaseProduct, slug=slug)
 
         # Retrieve related products
-        related_products = BaseProduct.objects.filter(type__slug=base_product.type.slug)[:20]
+        # related_products = BaseProduct.objects.filter(type__slug=base_product.type.slug)[:20]
 
         # Serialize the product and related products
         product_serializer = BaseProductSerializer(base_product)
+        product_type = Type.objects.get(pk=base_product.type_id)
+        type_serializer = TypeSerializer(product_type)
+
+        # Get all categories associated with the base_product
+        categories = base_product.categories.all()
+
+        # Serialize the categories
+        category_serializer = CategorySerializer(categories, many=True)
 
         # if base_product is a variant product get the products
         if base_product.product_type == 'variable':
             # If the base product is a variant product, retrieve associated variants and options
-            variants = BaseProductVariant.objects.filter(product=base_product.id)
-            # variant_options = BaseProductVariantOption.objects.filter(variant__in=variants)
+            base_product_variation_options = BaseProductVariantOption.objects.filter(product_name=base_product.name)
+
+            variant_options_set = []
+            for base_product_variation_option in base_product_variation_options:
+                variant_option = VariantOption.objects.get(value=base_product_variation_option.variant_option_name)
+                variant = Variant.objects.get(pk=variant_option.variant_id)
+
+                combined_data = {
+                    'id': variant_option.id,
+                    'attribute': variant,
+                    'attribute_id': variant.id,
+                    'name': variant_option.variant_name,
+                    'language': variant_option.language,
+                    'meta': variant_option.meta,
+                    'slug': variant_option.slug,
+                    'translated_languages': variant_option.translated_languages,
+                    'value': variant_option.value,
+                }
+                variant_options_set.append(combined_data)
+
+            products = Product.objects.filter(product=base_product.id)
 
             # Serialize variants and variant options
             # variant_serializer = VariantSerializer(variants, many=True)
             # variant_option_serializer = VariantOptionSerializer(variant_options, many=True)
-
-            variant_options = {
-
-            }
+            product_variants = ProductSerializer(products, many=True)
+            # variant_options_serializers = VariantOptionSerializer(variant_options, many=True)
+            variant_options_serializers = CustomVariantOptionSerializer(variant_options_set, many=True)
 
             # Add variations and variant options to the response data
             response_data = {
                 **product_serializer.data,
-                # 'variations': variant_serializer.data,
+                'type': type_serializer.data,
+                'categories': category_serializer.data,
+                'variations': variant_options_serializers.data,
+                'variation_options': product_variants.data,
                 # 'variant_options': variant_option_serializer.data,
             }
         else:
             # If the base product is not a variant product, return the product data without variations
-            response_data = product_serializer.data
+            # base_product_paged_data = {
+            #     'id': base_product.id,
+            #     'name': base_product.name,
+            #     'type': product_type,
+            #     'language': base_product.language,
+            #     'description': base_product.description,
+            #     'slug': base_product.slug,
+            #     'translated_languages': base_product.translated_languages,
+            #     'price': base_product.price,
+            # }
+            # serializer = BaseProductPagedDataSerializer(base_product_paged_data, many=True)
+            # response_data = serializer.data
+            response_data = {
+                **product_serializer.data,
+                'categories': category_serializer.data,
+                'type': type_serializer.data,
+            }
         return Response(response_data)
         # related_products_serializer = BaseProductSerializer(related_products, many=True)
 
@@ -355,10 +402,10 @@ def get_product_by_slug(request, slug):
 def delete_product(request, pk):
     try:
         # Retrieve the product instance from the database
-        product = get_object_or_404(Product, pk=pk)
+        base_product = get_object_or_404(BaseProduct, pk=pk)
 
         # Delete the product
-        product.delete()
+        base_product.delete()
 
         return Response({'message': 'Product deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
 

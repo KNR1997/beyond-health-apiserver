@@ -30,6 +30,31 @@ class VariantOptionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+# class CustomVariantOptionSerializer(serializers.Serializer):
+#     id = serializers.IntegerField()
+#     attribute = serializers.JSONField()
+#     attribute_id = serializers.IntegerField()
+#     name = serializers.CharField()
+#     language = serializers.CharField()
+#     meta = serializers.CharField()
+#     slug = serializers.CharField()
+#     translated_languages = serializers.CharField()
+#     value = serializers.CharField()
+
+class CustomVariantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Variant
+        fields = ['id', 'name']  # Specify the fields you want to include for Variant
+
+
+class CustomVariantOptionSerializer(serializers.ModelSerializer):
+    attribute = VariantSerializer()
+
+    class Meta:
+        model = VariantOption
+        fields = ['id', 'attribute', 'language', 'meta', 'slug', 'translated_languages', 'value']
+
+
 class VariantPagedDataSerializer(serializers.ModelSerializer):
     values = VariantOptionSerializer(many=True)
 
@@ -64,8 +89,8 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 class BaseProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = BaseProduct
-        fields = ['id', 'name', 'slug', 'description', 'type', 'product_type', 'language', 'price',
-                  'translated_languages', 'created_by', 'quantity']
+        fields = ['id', 'name', 'slug', 'description', 'categories', 'type', 'product_type', 'language', 'price',
+                  'min_price', 'max_price', 'translated_languages', 'created_by', 'quantity', 'status']
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -76,6 +101,14 @@ class BaseProductSerializer(serializers.ModelSerializer):
             data['price'] = Decimal(price)
 
         return data
+
+
+class BaseProductPagedDataSerializer(serializers.ModelSerializer):
+    type = TypeSerializer(many=True)
+
+    class Meta:
+        model = BaseProduct
+        fields = ['id', 'name', 'type', 'slug', 'description', 'type', 'product_type', 'language', 'price']
 
 
 # class ProductPagedDataSerializer(serializers.ModelSerializer):
@@ -92,7 +125,14 @@ class BaseProductSerializer(serializers.ModelSerializer):
 #             return base_product_data.get('name')
 #         return None
 
-class ProductPagedDataSerializer(serializers.Serializer):
+
+class ProductSerializer(BaseProductSerializer):
+    class Meta:
+        model = Product
+        fields = '__all__'
+
+
+class ProductsPagedDataSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
     description = serializers.CharField()

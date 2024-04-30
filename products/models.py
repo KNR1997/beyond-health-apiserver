@@ -56,7 +56,7 @@ class BaseProduct(models.Model):
     slug = models.CharField(max_length=255)
     description = models.TextField()  # Modify to TextField to accommodate longer descriptions
     type = models.ForeignKey(Type, on_delete=models.CASCADE, default=None)  # Add this field
-    categories = models.ManyToManyField(Category)  # Many-to-many relationship with Category
+    categories = models.ManyToManyField(Category, related_name="product_categories")
     product_type = models.CharField(max_length=20, default='simple')
     language = models.CharField(max_length=10, default='en')
     translated_languages = models.JSONField(default=["en"])  # New field for translated languages
@@ -125,6 +125,7 @@ class BaseProductVariantOption(models.Model):
                                                on_delete=models.CASCADE)
     variant_option = models.ForeignKey(VariantOption, related_name='product_variant_option_value',
                                        on_delete=models.CASCADE)
+    # add product id
     product_name = models.CharField(max_length=255)
     variant_name = models.CharField(max_length=255)
     variant_option_name = models.CharField(max_length=255)
