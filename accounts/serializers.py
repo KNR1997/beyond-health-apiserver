@@ -76,23 +76,22 @@ class UserSerializer(serializers.ModelSerializer):
 
 class ClientUserSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField(read_only=True)
-    # first_name = serializers.SerializerMethodField(read_only=True)
+    first_name = serializers.SerializerMethodField(read_only=True)
     # last_name = serializers.SerializerMethodField(read_only=True)
-    phone_number = serializers.SerializerMethodField(read_only=True)
+    # phone_number = serializers.SerializerMethodField(read_only=True)
     email = serializers.SerializerMethodField(read_only=True)
     # role = serializers.SerializerMethodField(read_only=True)
     # profile_image = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = UserAccount
-        fields = ['id', 'email', 'phone_number']
+        fields = ['id', 'first_name', 'email']
 
     def get_id(self, obj):
         return obj.id
     
-    # def get_first_name(self, obj):
-    #     clientProfile = ClientProfile.objects.get(userAccount = obj.id)
-    #     return clientProfile.first_name
+    def get_first_name(self, obj):
+        return obj.first_name
     
     # def get_last_name(self, obj):
     #     clientProfile = ClientProfile.objects.get(userAccount = obj.id)

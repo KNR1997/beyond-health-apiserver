@@ -174,6 +174,16 @@ DJOSER = {
     'TOKEN_MODEL': None,
 }
 
+AUTH_COOKIE = 'access'
+AUTH_COOKIE_ACCESS_MAX_AGE = 60 * 60 * 1
+AUTH_COOKIE_REFRESH_MAX_AGE = 60 * 60 * 24
+if DEBUG: # If DEBUG is True
+    AUTH_COOKIE_SECURE = False
+else: # If DEBUG is False
+    AUTH_COOKIE_SECURE = True
+AUTH_COOKIE_HTTP_ONLY = True
+AUTH_COOKIE_PATH = '/'
+AUTH_COOKIE_SAMESITE = 'None'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/

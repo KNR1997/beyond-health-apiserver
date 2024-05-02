@@ -42,13 +42,15 @@ class VariantOptionSerializer(serializers.ModelSerializer):
 #     value = serializers.CharField()
 
 class CustomVariantSerializer(serializers.ModelSerializer):
+    values = VariantOptionSerializer(many=True)
+
     class Meta:
         model = Variant
-        fields = ['id', 'name']  # Specify the fields you want to include for Variant
+        fields = ['id', 'name', 'shop_id', 'language', 'translated_languages', 'slug', 'values']
 
 
 class CustomVariantOptionSerializer(serializers.ModelSerializer):
-    attribute = VariantSerializer()
+    attribute = CustomVariantSerializer()
 
     class Meta:
         model = VariantOption
@@ -89,8 +91,8 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 class BaseProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = BaseProduct
-        fields = ['id', 'name', 'slug', 'description', 'categories', 'type', 'product_type', 'language', 'price',
-                  'min_price', 'max_price', 'translated_languages', 'created_by', 'quantity', 'status']
+        fields = ['id', 'name', 'slug', 'unit', 'description', 'quantity', 'categories', 'type', 'product_type',
+                  'language', 'price', 'min_price', 'max_price', 'translated_languages', 'created_by', 'status', 'tags']
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -204,13 +206,13 @@ class CreateProductSerializer(serializers.ModelSerializer):
                   'translated_languages', 'created_by', 'product_combination']
 
 
-class ProductVariantOptionSerializer(serializers.ModelSerializer):
+class ProductVariantSerializer(serializers.ModelSerializer):
     class Meta:
         model = BaseProductVariant
         fields = '__all__'
 
 
-class ProductVariantOptionValueSerializer(serializers.ModelSerializer):
+class ProductVariantOptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = BaseProductVariantOption
         fields = '__all__'
