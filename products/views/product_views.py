@@ -3,14 +3,16 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.db import transaction
 
-from products.models import Product, VariantOption, BaseProductVariant, BaseProduct, Variant, BaseProductVariantOption, \
-    Type
+from products.models import Product, VariantOption, BaseProduct, Variant, BaseProductVariantOption, \
+    Type, BaseProductVariant
 from products.serializers import BaseProductSerializer, CreateProductSerializer, ProductsPagedDataSerializer, \
     ProductSerializer, \
     CustomVariantOptionSerializer, TypeSerializer, \
-    CategorySerializer, BaseProductVariantSerializer, BaseProductVariantOptionSerializer
-from products.services.product_services import create_product_variant
+    CategorySerializer
+from products.services.product_services import create_product_variant, save_base_product, create_variable_products, \
+    create_simple_product, update_simple_product
 
 
 # Create your views here.
@@ -120,148 +122,9 @@ def get_products(request):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-def generate_combination_string(variant_option_keys):
-    # Sort the variant_option_keys alphabetically
-    sorted_keys = sorted(variant_option_keys)
-    # Join the sorted keys to form the combination string
-    return ''.join(sorted_keys)
-
-
-# @api_view(['POST'])
-# def create_product(request):
-#     serializer = CreateProductSerializer(data=request.data)
-#     if not serializer.is_valid():
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#
-#     try:
-#         data = serializer.validated_data
-#         product_type = data.get('product_type', 'simple')
-#
-#         # Create the base product
-#         base_product_serializer = BaseProductSerializer(data=request.data)
-#
-#         if not base_product_serializer.is_valid():
-#             return Response(base_product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#
-#         # Todo -> Save only if all requirements succeed
-#         base_product_instance = base_product_serializer.save()
-#
-#         if product_type == 'variable':
-#             variant_options = request.data.get('variation_options')
-#             upserts = variant_options.get('upsert')
-#
-#             for upsert in upserts:
-#                 # get variant id using variant_option_data(integer)
-#                 options = upsert.get('options')
-#
-#                 variant_option_keys = []
-#
-#                 # Get variant_options keys for product
-#                 for option in options:
-#                     variant = Variant.objects.get(name=option.get('name'))
-#                     variant_option = VariantOption.objects.get(value=option.get('value'))
-#
-#                     variant_option_first_letters = variant_option.first_letters
-#                     variant_option_keys.append(variant_option_first_letters)
-#
-#                     # check if already Base_product has relation with variant
-#                     existing_relation = BaseProductVariant.objects.filter(
-#                         base_product=base_product_instance,
-#                         variant=variant
-#                     )
-#
-#                     if not existing_relation:
-#                         base_product_variant_data = {
-#                             'base_product': base_product_instance.id,
-#                             'base_product_name': base_product_instance.name,
-#                             'variant': variant_option.variant.id,
-#                             'variant_name': variant_option.variant.name,
-#                         }
-#
-#                         # Create BaseProductVariant
-#                         base_product_variant_serializer = BaseProductVariantSerializer(data=base_product_variant_data)
-#                         if base_product_variant_serializer.is_valid():
-#                             base_product_variant_instance = base_product_variant_serializer.save()
-#                         else:
-#                             return Response(base_product_variant_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#
-#                     else:
-#                         base_product_variant_instance = BaseProductVariant.objects.get(
-#                             base_product=base_product_instance,
-#                             variant=variant_option.variant
-#                         )
-#
-#                     # check if already Base_product has relation with variant_option
-#                     existing_product_variant_option = BaseProductVariantOption.objects.filter(
-#                         base_product=base_product_instance,
-#                         variant_option_name=variant_option.value
-#                     )
-#
-#                     if not existing_product_variant_option:
-#                         base_product_variant_option_data = {
-#                             'base_product': base_product_instance.id,
-#                             'base_product_variant': base_product_variant_instance.id,
-#                             'variant_option': variant_option.id,
-#                             'base_product_name': base_product_instance.name,
-#                             'variant_name': variant_option.variant.name,
-#                             'variant_option_name': variant_option.value,
-#                         }
-#
-#                         # Create BaseProductVariantOption
-#                         base_product_variant_option_serializer = BaseProductVariantOptionSerializer(
-#                             data=base_product_variant_option_data)
-#                         if base_product_variant_option_serializer.is_valid():
-#                             base_product_variant_option_serializer.save()
-#                         else:
-#                             base_product_variant_instance.delete()
-#                             return Response(base_product_variant_option_serializer.errors,
-#                                             status=status.HTTP_400_BAD_REQUEST)
-#
-#                 # Generate combination string based on variant option keys
-#                 combination_string = generate_combination_string(variant_option_keys)
-#
-#                 product_data = {
-#                     'base_product': base_product_instance.id,
-#                     'combination_string': combination_string,
-#                     'product_type': base_product_instance.product_type,
-#                     **upsert,
-#                     'created_by': request.user.id,
-#                 }
-#
-#                 product_serializer = ProductSerializer(data=product_data)
-#                 if not product_serializer.is_valid():
-#                     base_product_instance.delete()  # Rollback product creation if combination fails
-#                     return Response(product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#
-#                 product_serializer.save()
-#
-#         if product_type == 'simple':
-#             # Create ProductionCombination for simple product
-#             product_data = {
-#                 'base_product': base_product_instance.id,
-#                 'combination_string': base_product_instance.name,
-#                 **request.data,
-#             }
-#
-#             product_serializer = ProductSerializer(data=product_data)
-#             if not product_serializer.is_valid():
-#                 base_product_instance.delete()  # Rollback product creation if combination fails
-#                 return Response(product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#
-#             combination_instance = product_serializer.save()
-#
-#             # Return response with combination data
-#             return Response(product_serializer.data, status=status.HTTP_201_CREATED)
-#         else:
-#             # Handle other product types (e.g., variable product)
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#
-#     except Exception as e:
-#         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 @api_view(['POST'])
 def create_product(request):
-    serializer = CreateProductSerializer(data=request.data)
+    serializer = BaseProductSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -269,128 +132,25 @@ def create_product(request):
         data = serializer.validated_data
         product_type = data.get('product_type', 'simple')
 
-        # Create the base product
-        base_product_instance = create_base_product(request.data)
+        # Use transaction.atomic to wrap the entire operation in a transaction
+        with transaction.atomic():
+            # Create the base product
+            base_product_instance = save_base_product(request.data)
 
-        if product_type == 'variable':
-            variation_options = request.data.get('variation_options')
-            upserts = variation_options.get('upsert')
-            create_variable_products(base_product_instance, upserts, request.user.id)
-        elif product_type == 'simple':
-            create_simple_product(base_product_instance, request.data)
+            if product_type == 'variable':
+                variation_options = request.data.get('variation_options')
+                upserts = variation_options.get('upsert')
+                create_variable_products(base_product_instance, upserts, request.user.id)
+            elif product_type == 'simple':
+                create_simple_product(base_product_instance, request.data)
 
-        return Response({'message': 'Product created successfully'}, status=status.HTTP_201_CREATED)
+            # If all operations succeed within the transaction, return success response
+            return Response({'message': 'Product created successfully'}, status=status.HTTP_201_CREATED)
 
     except Exception as e:
+        # If any exception occurs, rollback the transaction and return error response
+        transaction.set_rollback(True)
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-def create_base_product(data):
-    base_product_serializer = BaseProductSerializer(data=data)
-    base_product_serializer.is_valid(raise_exception=True)
-    return base_product_serializer.save()
-
-
-def create_variable_products(base_product_instance, upserts, created_by):
-    for upsert in upserts:
-        variant_option_keys = []
-        options = upsert.get('options')
-
-        for option in options:
-            variant_option = get_or_create_variant_option(option)
-            variant_option_keys.append(variant_option.first_letters)
-
-            base_product_variant_instance = create_base_product_variant(base_product_instance, variant_option)
-
-            create_base_product_variant_option(
-                base_product_instance,
-                base_product_variant_instance,
-                variant_option,
-                base_product_instance.name,
-                variant_option.variant.name,
-                variant_option.value
-            )
-
-        combination_string = generate_combination_string(variant_option_keys)
-
-        product_data = {
-            'base_product': base_product_instance.id,
-            'combination_string': combination_string,
-            'product_type': base_product_instance.product_type,
-            **upsert,
-            'created_by': created_by,
-        }
-        create_product_from_data(product_data)
-
-
-def create_simple_product(base_product_instance, data):
-    product_data = {
-        'base_product': base_product_instance.id,
-        'combination_string': base_product_instance.name,
-        **data,
-    }
-    create_product_from_data(product_data)
-
-
-def get_or_create_variant_option(option_data):
-    variant = Variant.objects.get(name=option_data.get('name'))
-    variant_option, created = VariantOption.objects.get_or_create(value=option_data.get('value'))
-    return variant_option
-
-
-def create_base_product_variant(base_product_instance, variant_option):
-    # Check if the relationship already exists
-    existing_relation = BaseProductVariant.objects.filter(
-        base_product=base_product_instance,
-        variant=variant_option.variant
-    )
-
-    if existing_relation.exists():  # Check if an existing relation is found
-        return existing_relation.first()  # Return the first matching instance
-
-    # If no existing relation found, create a new BaseProductVariant instance
-    base_product_variant_data = {
-        'base_product': base_product_instance.id,
-        'base_product_name': base_product_instance.name,
-        'variant': variant_option.variant.id,
-        'variant_name': variant_option.variant.name,
-    }
-
-    base_product_variant_serializer = BaseProductVariantSerializer(data=base_product_variant_data)
-    if base_product_variant_serializer.is_valid():
-        base_product_variant_instance = base_product_variant_serializer.save()
-        return base_product_variant_instance
-
-    return None  # Return None if serializer validation fails or instance creation fails
-
-
-def create_base_product_variant_option(base_product_instance, base_product_variant_instance, variant_option,
-                                       product_name, variant_name, variant_option_name):
-    existing_product_variant_option = BaseProductVariantOption.objects.filter(
-        base_product=base_product_instance,
-        variant_option_name=variant_option.value
-    )
-    if not existing_product_variant_option:
-        base_product_variant_option_data = {
-            'base_product': base_product_instance.id,
-            'base_product_variant': base_product_variant_instance.id,
-            'variant_option': variant_option.id,
-            'base_product_name': product_name,
-            'variant_name': variant_name,
-            'variant_option_name': variant_option_name,
-        }
-        base_product_variant_option_serializer = BaseProductVariantOptionSerializer(
-            data=base_product_variant_option_data)
-        if base_product_variant_option_serializer.is_valid():
-            base_product_variant_option_serializer.save()
-
-
-def create_product_from_data(product_data):
-    product_serializer = ProductSerializer(data=product_data)
-    if product_serializer.is_valid():
-        product_serializer.save()
-    else:
-        raise ValueError(product_serializer.errors)
 
 
 @api_view(['PUT'])
@@ -407,37 +167,33 @@ def update_product(request, pk):
 
         # Is update_product going to change its product_type (ex: simple to variable)
         if existing_product_type != requested_product_type:
-            # Product type has changed, handle the change logic here
-            # Example: If product_type is changing, you might need to update related data
-
-            # You can implement specific logic based on the change in product_type
-            # For example:
-            # if existing_product_type == 'simple' and requested_product_type == 'variable':
-            #     # Handle change from simple to variable product type
-            #     pass
-            # elif existing_product_type == 'variable' and requested_product_type == 'simple':
-            #     # Handle change from variable to simple product type
-            #     pass
-
-            # Update the BaseProduct instance with the new data
-            base_product_serializer = BaseProductSerializer(instance=base_product, data=request.data, partial=True)
-            if base_product_serializer.is_valid():
-                base_product_serializer.save()  # Save the updated BaseProduct instance
-                return Response(base_product_serializer.data)
+            # todo -> simple to variant
+            if requested_product_type == 'variable':
+                base_product_serializer = BaseProductSerializer(instance=base_product, data=request.data, partial=True)
+                # todo -> delete the previous simple data record from product table
+                variation_options = request.data.get('variation_options')
+                upserts = variation_options.get('upsert')
+                if base_product_serializer.is_valid():
+                    Product.objects.filter(base_product=base_product.id).delete()
+                    base_product_saved = base_product_serializer.save()
+                    create_variable_products(base_product_saved, upserts, request.user.id)
+                return Response(base_product_serializer.data, status=status.HTTP_200_OK)
             else:
-                return Response(base_product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                base_product_serializer = BaseProductSerializer(instance=base_product, data=request.data, partial=True)
+                # # todo -> delete the previous simple data record from product table
+                if base_product_serializer.is_valid():
+                    Product.objects.filter(base_product=base_product.id).delete()
+                    base_product_instance = base_product_serializer.save()
+                    create_simple_product(base_product_instance, request.data)
+                    BaseProductVariant.objects.filter(base_product=base_product.id).delete()
+                    BaseProductVariantOption.objects.filter(base_product=base_product.id).delete()
+                return Response(base_product_serializer.data, status=status.HTTP_200_OK)
+
         # update_product not going to change its product_type
         else:
             # If product is a simple
             if existing_product_type == 'simple':
-                # Product type has not changed, proceed with updating the existing BaseProduct
-                base_product_serializer = BaseProductSerializer(instance=base_product, data=request.data, partial=True)
-                if base_product_serializer.is_valid():
-                    base_product_serializer.save()  # Save the updated BaseProduct instance
-                    return Response(base_product_serializer.data)
-                else:
-                    return Response(base_product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            # if product is variable
+                return update_simple_product(base_product, request)
             else:
                 base_product_serializer = BaseProductSerializer(instance=base_product, data=request.data, partial=True)
                 if base_product_serializer.is_valid():
@@ -453,9 +209,10 @@ def update_product(request, pk):
                         # create new product
                         if upsert_id is None:
                             # create new Product
-                            created_product = create_product_variant(base_product_instance, upsert, request)
-                            if isinstance(created_product, Response):  # Check if creation failed
-                                return created_product  # Return the error response
+                            create_variable_products(base_product_instance, upsert, request.user.id)
+                            # created_product = create_product_variant(base_product_instance, upsert, request)
+                            # if isinstance(created_product, Response):  # Check if creation failed
+                            #     return created_product  # Return the error response
 
                         # update existing product
                         else:

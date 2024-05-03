@@ -135,7 +135,7 @@ class BaseProductVariantOption(models.Model):
 
 class Product(models.Model):
     base_product = models.ForeignKey(BaseProduct, related_name='products', on_delete=models.CASCADE)
-    combination_string = models.CharField(max_length=255)
+    combination_string = models.CharField(max_length=255, null=True)
     product_type = models.CharField(max_length=20, default='simple')
     sku = models.CharField(max_length=255)
     title = models.CharField(max_length=155, default='Default Title')
