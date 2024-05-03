@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 
-from products.models import VariantOption, BaseProductVariant, Variant, BaseProductVariantOption
+from products.models import VariantOption, BaseProductVariant, Variant, BaseProductVariantOption, Product
 from products.serializers import ProductSerializer, BaseProductVariantSerializer, BaseProductVariantOptionSerializer, \
     BaseProductSerializer
 
@@ -165,12 +165,35 @@ def create_simple_product(base_product_instance, data):
 
 
 def update_simple_product(base_product, request):
+    product = Product.objects.get(base_product=base_product)
+
+    # Serialize the base product with partial data
     base_product_serializer = BaseProductSerializer(instance=base_product, data=request.data, partial=True)
-    if base_product_serializer.is_valid():
-        base_product_serializer.save()
-        return Response(base_product_serializer.data)
-    else:
-        return Response(base_product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    product_serializer = ProductSerializer(instance=product, data=request.data, partial=True)
+
+    # Check if both serializers are valid
+    if base_product_serializer.is_valid() and product_serializer.is_valid():
+        # Save the updated base product
+        base_product_instance = base_product_serializer.save()
+
+        # Save all related products
+        product_instances = product_serializer.save()
+
+        # Construct a response with updated data
+        response_data = {
+            'base_product': BaseProductSerializer(base_product_instance).data,
+            'product': ProductSerializer(product_instances).data
+        }
+        return Response(base_product_serializer.data, status=status.HTTP_200_OK)
+
+    # If any serializer is invalid, return the errors
+    errors = {}
+    if not base_product_serializer.is_valid():
+        errors['base_product'] = base_product_serializer.errors
+    if not product_serializer.is_valid():
+        errors['product'] = product_serializer.errors
+
+    return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 def get_or_create_variant_option(option_data):
