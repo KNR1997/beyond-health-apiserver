@@ -30,17 +30,6 @@ class VariantOptionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-# class CustomVariantOptionSerializer(serializers.Serializer):
-#     id = serializers.IntegerField()
-#     attribute = serializers.JSONField()
-#     attribute_id = serializers.IntegerField()
-#     name = serializers.CharField()
-#     language = serializers.CharField()
-#     meta = serializers.CharField()
-#     slug = serializers.CharField()
-#     translated_languages = serializers.CharField()
-#     value = serializers.CharField()
-
 class CustomVariantSerializer(serializers.ModelSerializer):
     values = VariantOptionSerializer(many=True)
 
@@ -168,7 +157,7 @@ class ProductsPagedDataSerializer(serializers.Serializer):
 class ProductionCombinationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['id', 'product', 'combination_string', 'price', 'sale_price', 'min_price', 'max_price', 'status',
+        fields = ['id', 'base_product', 'combination_string', 'price', 'sale_price', 'min_price', 'max_price', 'status',
                   'popular_product', 'discount', 'in_stock', 'created_by',
                   'quantity']
 
@@ -212,7 +201,19 @@ class ProductVariantSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class BaseProductVariantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BaseProductVariant
+        fields = '__all__'
+
+
 class ProductVariantOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BaseProductVariantOption
+        fields = '__all__'
+
+
+class BaseProductVariantOptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = BaseProductVariantOption
         fields = '__all__'

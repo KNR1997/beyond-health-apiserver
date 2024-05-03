@@ -2,7 +2,8 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from products.models import VariantOption, BaseProductVariant, Variant, BaseProductVariantOption
-from products.serializers import ProductSerializer, ProductVariantSerializer, ProductVariantOptionSerializer
+from products.serializers import ProductSerializer, ProductVariantSerializer, ProductVariantOptionSerializer, \
+    BaseProductVariantSerializer, BaseProductVariantOptionSerializer
 
 
 def generate_combination_string(variant_option_keys):
@@ -30,7 +31,7 @@ def create_product_variant(base_product, upsert, request):
 
     try:
         product_data = {
-            'product': base_product.id,
+            'base_product': base_product.id,
             'combination_string': combination_string,
             'product_type': 'variable',
             'sku': upsert.get("sku"),
@@ -57,20 +58,20 @@ def create_product_variant(base_product, upsert, request):
             base_product_variant_instance = None
 
             existing_product_variant = BaseProductVariant.objects.filter(
-                product=base_product,
+                base_product=base_product,
                 variant=variant_instance,
             )
 
             if not existing_product_variant:
                 base_product_variant_data = {
-                    'product': base_product.id,
-                    'product_name': base_product.name,
+                    'base_product': base_product.id,
+                    'base_product_name': base_product.name,
                     'variant': variant_instance.id,
                     'variant_name': variant_instance.name,
                 }
 
                 # Create ProductVariant
-                variant_option_serializer = ProductVariantSerializer(data=base_product_variant_data)
+                variant_option_serializer = BaseProductVariantSerializer(data=base_product_variant_data)
                 if variant_option_serializer.is_valid():
                     base_product_variant_instance = variant_option_serializer.save()
                 else:
@@ -80,21 +81,22 @@ def create_product_variant(base_product, upsert, request):
 
             # check if already Base_product has relation with variant_option
             existing_product_variant_option = BaseProductVariantOption.objects.filter(
-                productVariationOption=base_product_variant_instance,
-                variant_option=variant_option_instance
+                base_product=base_product,
+                variant_option_name=variant_option_instance.value
             )
 
             if not existing_product_variant_option:
                 base_product_variant_option_data = {
-                    'productVariationOption': base_product_variant_instance.id,
-                    'product_name': base_product.name,
+                    'base_product': base_product.id,
+                    'base_product_variant': base_product_variant_instance.id,
                     'variant_option': variant_option_instance.id,
+                    'base_product_name': base_product.name,
                     'variant_name': variant_option_instance.variant_name,
                     'variant_option_name': variant_option_instance.value,
                 }
 
                 # Create ProductVariantOption
-                base_product_variant_option = ProductVariantOptionSerializer(
+                base_product_variant_option = BaseProductVariantOptionSerializer(
                     data=base_product_variant_option_data)
                 if base_product_variant_option.is_valid():
                     base_product_variant_option.save()

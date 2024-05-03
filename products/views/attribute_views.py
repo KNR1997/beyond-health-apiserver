@@ -75,7 +75,6 @@ def get_attributes(request):
             }
             serialized_data.append(combined_data)
 
-
         # Serialize the paginated variants
         serializer = VariantPagedDataSerializer(serialized_data, many=True)
 
