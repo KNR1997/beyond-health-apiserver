@@ -12,7 +12,7 @@ from products.serializers import BaseProductSerializer, CreateProductSerializer,
     CustomVariantOptionSerializer, TypeSerializer, \
     CategorySerializer
 from products.services.product_services import create_product_variant, save_base_product, create_variable_products, \
-    create_simple_product, update_simple_product
+    create_simple_product, update_simple_product, update_variant_product
 
 
 # Create your views here.
@@ -188,46 +188,11 @@ def update_product(request, pk):
                     BaseProductVariant.objects.filter(base_product=base_product.id).delete()
                     BaseProductVariantOption.objects.filter(base_product=base_product.id).delete()
                 return Response(base_product_serializer.data, status=status.HTTP_200_OK)
-
-        # update_product not going to change its product_type
         else:
-            # If product is a simple
             if existing_product_type == 'simple':
                 return update_simple_product(base_product, request)
             else:
-                base_product_serializer = BaseProductSerializer(instance=base_product, data=request.data, partial=True)
-                if base_product_serializer.is_valid():
-                    # Save the updated BaseProduct instance
-                    base_product_instance = base_product_serializer.save()
-
-                    # Get variant products from request data
-                    variant_products = request.data.get('variation_options')
-                    upserts = variant_products.get('upsert')
-
-                    for upsert in upserts:
-                        upsert_id = upsert.get('id')
-                        # create new product
-                        if upsert_id is None:
-                            # create new Product
-                            create_variable_products(base_product_instance, upsert, request.user.id)
-                            # created_product = create_product_variant(base_product_instance, upsert, request)
-                            # if isinstance(created_product, Response):  # Check if creation failed
-                            #     return created_product  # Return the error response
-
-                        # update existing product
-                        else:
-                            product = Product.objects.get(pk=upsert.get('id'))
-                            product_serializer = ProductSerializer(instance=product, data=upsert, partial=True)
-                            if product_serializer.is_valid():
-                                product_serializer.save()
-                            else:
-                                # Rollback the base product update if any variant product fails to save
-                                # base_product_instance.delete()
-                                return Response(product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-                    return Response(base_product_serializer.data)
-                else:
-                    return Response(base_product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return update_variant_product(base_product, request)
 
     except Product.DoesNotExist:
         return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)

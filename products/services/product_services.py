@@ -1,6 +1,8 @@
+from django.db import transaction
 from rest_framework import status
 from rest_framework.response import Response
 
+from accounts.models import UserAccount
 from products.models import VariantOption, BaseProductVariant, Variant, BaseProductVariantOption, Product
 from products.serializers import ProductSerializer, BaseProductVariantSerializer, BaseProductVariantOptionSerializer, \
     BaseProductSerializer
@@ -113,6 +115,7 @@ def create_product_variant(base_product, upsert, request):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+# todo -> rename to create_product_record_for_variable_product
 def create_variable_products(base_product_instance, upserts, created_by):
     for upsert in upserts:
         variant_option_keys = []
@@ -194,6 +197,129 @@ def update_simple_product(base_product, request):
         errors['product'] = product_serializer.errors
 
     return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def update_variant_product(base_product, request):
+    variant_products = request.data.get('variation_options')
+    upserts = variant_products.get('upsert')
+    user = UserAccount.objects.get(pk=request.data.get('created_by'))
+
+    # List to hold response data for each product (updated or created)
+    response_data = []
+
+    try:
+        with transaction.atomic():
+            for upsert in upserts:
+                upsert_id = upsert.get('id')
+
+                if upsert_id:
+                    # Update existing product
+                    try:
+                        product = Product.objects.get(pk=upsert.get('id'))
+                    except Product.DoesNotExist:
+                        return Response(
+                            {'error': f'Product with id {upsert.get('id')} does not exist for this base product.'},
+                            status=status.HTTP_404_NOT_FOUND)
+                else:
+                    product = Product(base_product=base_product,
+                                      price=upsert.get('price'),
+                                      sale_price=upsert.get('sale_price'),
+                                      sku=upsert.get('sku'),
+                                      title=upsert.get('title'),
+                                      created_by=user)
+
+                    # Process options to create or retrieve BaseProductVariant objects
+                    options = upsert.get('options', [])
+                    for option in options:
+                        option_name = option.get('name')
+                        option_value = option.get('value')
+
+                        variant = Variant.objects.get(name=option_name)
+                        variant_option = VariantOption.objects.get(value=option_value)
+
+                        # Check if a BaseProductVariant already exists for the given name and value
+                        try:
+                            base_product_variant = BaseProductVariant.objects.get(base_product=base_product,
+                                                                                  base_product_name=base_product.name,
+                                                                                  variant=variant,
+                                                                                  variant_name=option_name)
+
+                        except BaseProductVariant.DoesNotExist:
+                            # Create a new BaseProductVariant if it doesn't exist
+                            base_product_variant = BaseProductVariant.objects.create(base_product=base_product,
+                                                                                     base_product_name=base_product.name,
+                                                                                     variant=variant,
+                                                                                     variant_name=option_name)
+                        try:
+                            BaseProductVariantOption.objects.get(base_product=base_product,
+                                                                 variant_name=option_name,
+                                                                 variant_option_name=option_value)
+                        except BaseProductVariantOption.DoesNotExist:
+                            # Create a new BaseProductVariantOption if it doesn't exist
+                            BaseProductVariantOption.objects.create(base_product=base_product,
+                                                                    base_product_variant=base_product_variant,
+                                                                    variant_option=variant_option,
+                                                                    base_product_name=base_product.name,
+                                                                    variant_name=variant.name,
+                                                                    variant_option_name=variant_option.value)
+
+                product_serializer = ProductSerializer(instance=product, data=upsert, partial=True)
+
+                if product_serializer.is_valid():
+                    # Save the updated or newly created product
+                    updated_product = product_serializer.save()
+
+                    # Append serialized product data to response list
+                    response_data.append(ProductSerializer(updated_product).data)
+                else:
+                    # If serializer is invalid, collect errors
+                    return Response({'error': product_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+            # If all products were updated or created successfully, save the base_product
+            base_product_serializer = BaseProductSerializer(instance=base_product, data=request.data, partial=True)
+            if base_product_serializer.is_valid():
+                # Save the updated BaseProduct instance
+                base_product_serializer.save()
+            else:
+                return Response(base_product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(base_product_serializer.data)
+
+    except Exception as e:
+        # Handle any exception that occurred during the transaction
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# def update_variant_product(base_product, request):
+#     base_product_serializer = BaseProductSerializer(instance=base_product, data=request.data, partial=True)
+#     if base_product_serializer.is_valid():
+#         # Save the updated BaseProduct instance
+#         base_product_instance = base_product_serializer.save()
+#
+#         # Get variant products from request data
+#         variant_products = request.data.get('variation_options')
+#         upserts = variant_products.get('upsert')
+#
+#         for upsert in upserts:
+#             upsert_id = upsert.get('id')
+#             # create new product
+#             if upsert_id is None:
+#                 # create new Product
+#                 create_variable_products(base_product_instance, upsert, request.user.id)
+#             # update existing product
+#             else:
+#                 product = Product.objects.get(pk=upsert.get('id'))
+#                 product_serializer = ProductSerializer(instance=product, data=upsert, partial=True)
+#                 if product_serializer.is_valid():
+#                     product_serializer.save()
+#                 else:
+#                     # Rollback the base product update if any variant product fails to save
+#                     # base_product_instance.delete()
+#                     return Response(product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
+#         return Response(base_product_serializer.data)
+#     else:
+#         return Response(base_product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#     pass
 
 
 def get_or_create_variant_option(option_data):
