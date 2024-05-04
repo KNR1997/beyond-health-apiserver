@@ -1,18 +1,29 @@
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.db import transaction
 
-from products.models import Product, VariantOption, BaseProduct, Variant, BaseProductVariantOption, \
-    Type, BaseProductVariant
-from products.serializers import BaseProductSerializer, CreateProductSerializer, ProductsPagedDataSerializer, \
-    ProductSerializer, \
-    CustomVariantOptionSerializer, TypeSerializer, \
-    CategorySerializer
-from products.services.product_services import create_product_variant, save_base_product, create_variable_products, \
-    create_simple_product, update_simple_product, update_variant_product, simple_product_to_variant_product_conversion
+from products.models import (Product,
+                             VariantOption,
+                             BaseProduct, Variant,
+                             BaseProductVariantOption,
+                             Type,
+                             BaseProductVariant)
+from products.serializers import (BaseProductSerializer,
+                                  ProductsPagedDataSerializer,
+                                  ProductSerializer,
+                                  CustomVariantOptionSerializer,
+                                  TypeSerializer,
+                                  CategorySerializer)
+from products.services.product_services import (save_base_product,
+                                                create_variable_products,
+                                                create_simple_product,
+                                                update_simple_product,
+                                                update_variant_product,
+                                                simple_product_to_variant_product_conversion,
+                                                variant_product_to_simple_product_conversion)
 
 
 # Create your views here.
@@ -167,30 +178,11 @@ def update_product(request, pk):
 
         # Is update_product going to change its product_type (ex: simple to variable)
         if existing_product_type != requested_product_type:
-            # todo -> simple to variant
             # simple to variable conversion
             if requested_product_type == 'variable':
                 return simple_product_to_variant_product_conversion(base_product, request)
-                # base_product_serializer = BaseProductSerializer(instance=base_product, data=request.data, partial=True)
-                # # todo -> delete the previous simple data record from product table
-                # variation_options = request.data.get('variation_options')
-                # upserts = variation_options.get('upsert')
-                # if base_product_serializer.is_valid():
-                #     Product.objects.filter(base_product=base_product.id).delete()
-                #     base_product_saved = base_product_serializer.save()
-                #     create_variable_products(base_product_saved, upserts, request.user.id)
-                # return Response(base_product_serializer.data, status=status.HTTP_200_OK)
-            # variable to simple conversion
             else:
-                base_product_serializer = BaseProductSerializer(instance=base_product, data=request.data, partial=True)
-                # # todo -> delete the previous simple data record from product table
-                if base_product_serializer.is_valid():
-                    Product.objects.filter(base_product=base_product.id).delete()
-                    base_product_instance = base_product_serializer.save()
-                    create_simple_product(base_product_instance, request.data)
-                    BaseProductVariant.objects.filter(base_product=base_product.id).delete()
-                    BaseProductVariantOption.objects.filter(base_product=base_product.id).delete()
-                return Response(base_product_serializer.data, status=status.HTTP_200_OK)
+                return variant_product_to_simple_product_conversion(base_product, request)
         else:
             if existing_product_type == 'simple':
                 return update_simple_product(base_product, request)

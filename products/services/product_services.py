@@ -3,9 +3,15 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from accounts.models import UserAccount
-from products.models import VariantOption, BaseProductVariant, Variant, BaseProductVariantOption, Product
-from products.serializers import ProductSerializer, BaseProductVariantSerializer, BaseProductVariantOptionSerializer, \
-    BaseProductSerializer
+from products.models import (VariantOption,
+                             BaseProductVariant,
+                             Variant,
+                             BaseProductVariantOption,
+                             Product)
+from products.serializers import (ProductSerializer,
+                                  BaseProductVariantSerializer,
+                                  BaseProductVariantOptionSerializer,
+                                  BaseProductSerializer)
 
 
 def generate_combination_string(variant_option_keys):
@@ -225,6 +231,41 @@ def simple_product_to_variant_product_conversion(base_product, request):
                 return Response(base_product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             return Response(base_product_serializer.data)
 
+    except Exception as e:
+        # Handle any exception that occurred during the transaction
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+def variant_product_to_simple_product_conversion(base_product, request):
+    try:
+        variation_options = request.data.get('variation_options')
+        user = UserAccount.objects.get(pk=request.data.get('created_by'))
+
+        with transaction.atomic():
+            # Delete the existing Products, BaseProductVariants, BaseProductVariantOptions
+            Product.objects.filter(base_product=base_product.id).delete()
+            BaseProductVariant.objects.filter(base_product=base_product.id).delete()
+            BaseProductVariantOption.objects.filter(base_product=base_product.id).delete()
+
+            # Create new Product
+            Product.objects.create(base_product=base_product,
+                                   combination_string=None,
+                                   product_type=request.data.get('product_type'),
+                                   sku=request.data.get('sku'),
+                                   price=request.data.get('price'),
+                                   sale_price=request.data.get('sale_price'),
+                                   quantity=request.data.get('quantity'),
+                                   status=request.data.get('status'),
+                                   created_by=user)
+
+            # Update BaseProduct
+            base_product_serializer = BaseProductSerializer(instance=base_product, data=request.data, partial=True)
+            if base_product_serializer.is_valid():
+                # Save the updated BaseProduct instance
+                base_product_serializer.save()
+            else:
+                return Response(base_product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(base_product_serializer.data)
     except Exception as e:
         # Handle any exception that occurred during the transaction
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
