@@ -167,6 +167,69 @@ def create_simple_product(base_product_instance, data):
     save_product(product_data)
 
 
+def simple_product_to_variant_product_conversion(base_product, request):
+    try:
+        variation_options = request.data.get('variation_options')
+        upserts = variation_options.get('upsert')
+        user = UserAccount.objects.get(pk=request.data.get('created_by'))
+
+        with transaction.atomic():
+            # Delete the existing Product
+            Product.objects.filter(base_product=base_product.id).delete()
+
+            # Create BaseProductVariants, BaseProductVariantOptions and Product
+            for upsert in upserts:
+                product = Product(base_product=base_product,
+                                  price=upsert.get('price'),
+                                  sale_price=upsert.get('sale_price'),
+                                  sku=upsert.get('sku'),
+                                  title=upsert.get('title'),
+                                  created_by=user)
+
+                options = upsert.get('options', [])
+                for option in options:
+                    option_name = option.get('name')
+                    option_value = option.get('value')
+
+                    variant = Variant.objects.get(name=option_name)
+                    variant_option = VariantOption.objects.get(value=option_value)
+
+                    # create BaseProductVariants
+                    base_product_variant = BaseProductVariant.objects.create(base_product=base_product,
+                                                                             base_product_name=base_product.name,
+                                                                             variant=variant,
+                                                                             variant_name=option_name)
+                    # create BaseProductVariantOptions
+                    BaseProductVariantOption.objects.create(base_product=base_product,
+                                                            base_product_variant=base_product_variant,
+                                                            variant_option=variant_option,
+                                                            base_product_name=base_product.name,
+                                                            variant_name=variant.name,
+                                                            variant_option_name=variant_option.value)
+
+                product_serializer = ProductSerializer(instance=product, data=upsert, partial=True)
+
+                if product_serializer.is_valid():
+                    # Save the updated or newly created product
+                    product_serializer.save()
+                else:
+                    # If serializer is invalid, collect errors
+                    return Response({'error': product_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+            # If all products were updated or created successfully, save the base_product
+            base_product_serializer = BaseProductSerializer(instance=base_product, data=request.data, partial=True)
+            if base_product_serializer.is_valid():
+                # Save the updated BaseProduct instance
+                base_product_serializer.save()
+            else:
+                return Response(base_product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(base_product_serializer.data)
+
+    except Exception as e:
+        # Handle any exception that occurred during the transaction
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 def update_simple_product(base_product, request):
     product = Product.objects.get(base_product=base_product)
 

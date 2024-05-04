@@ -12,7 +12,7 @@ from products.serializers import BaseProductSerializer, CreateProductSerializer,
     CustomVariantOptionSerializer, TypeSerializer, \
     CategorySerializer
 from products.services.product_services import create_product_variant, save_base_product, create_variable_products, \
-    create_simple_product, update_simple_product, update_variant_product
+    create_simple_product, update_simple_product, update_variant_product, simple_product_to_variant_product_conversion
 
 
 # Create your views here.
@@ -168,16 +168,19 @@ def update_product(request, pk):
         # Is update_product going to change its product_type (ex: simple to variable)
         if existing_product_type != requested_product_type:
             # todo -> simple to variant
+            # simple to variable conversion
             if requested_product_type == 'variable':
-                base_product_serializer = BaseProductSerializer(instance=base_product, data=request.data, partial=True)
-                # todo -> delete the previous simple data record from product table
-                variation_options = request.data.get('variation_options')
-                upserts = variation_options.get('upsert')
-                if base_product_serializer.is_valid():
-                    Product.objects.filter(base_product=base_product.id).delete()
-                    base_product_saved = base_product_serializer.save()
-                    create_variable_products(base_product_saved, upserts, request.user.id)
-                return Response(base_product_serializer.data, status=status.HTTP_200_OK)
+                return simple_product_to_variant_product_conversion(base_product, request)
+                # base_product_serializer = BaseProductSerializer(instance=base_product, data=request.data, partial=True)
+                # # todo -> delete the previous simple data record from product table
+                # variation_options = request.data.get('variation_options')
+                # upserts = variation_options.get('upsert')
+                # if base_product_serializer.is_valid():
+                #     Product.objects.filter(base_product=base_product.id).delete()
+                #     base_product_saved = base_product_serializer.save()
+                #     create_variable_products(base_product_saved, upserts, request.user.id)
+                # return Response(base_product_serializer.data, status=status.HTTP_200_OK)
+            # variable to simple conversion
             else:
                 base_product_serializer = BaseProductSerializer(instance=base_product, data=request.data, partial=True)
                 # # todo -> delete the previous simple data record from product table
