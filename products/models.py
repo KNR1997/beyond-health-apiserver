@@ -152,6 +152,7 @@ class Product(models.Model):
     updated_by = models.ForeignKey(UserAccount, related_name='updated_products', on_delete=models.CASCADE, null=True,
                                    blank=True)
     updated_at = models.DateTimeField(auto_now=True)  # Automatically set whenever the object is saved
+    base_product_variant_options = models.ManyToManyField(BaseProductVariantOption, related_name="products")
 
 
 class ProductStock(models.Model):
