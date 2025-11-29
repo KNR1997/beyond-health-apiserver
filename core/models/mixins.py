@@ -2,6 +2,8 @@
 from django.db import models
 from django.utils import timezone
 
+from authentication.models import User
+
 
 class TimeAuditModel(models.Model):
     """To path when the record was created and last modified"""
