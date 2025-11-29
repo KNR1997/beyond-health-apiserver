@@ -1,7 +1,9 @@
-from core.views.base import BaseViewSet
+from rest_framework import status
+from rest_framework.response import Response
 
+from core.views.base import BaseViewSet
 from user.models import Patient
-from user.serializers import PatientListSerializer
+from user.serializers import PatientListSerializer, PatientCreateSerializer, PatientUpdateSerializer
 
 
 # Create your views here.
@@ -9,7 +11,7 @@ class PatientViewSet(BaseViewSet):
     model = Patient
     serializer_class = PatientListSerializer
 
-    search_fields = ["name"]
+    search_fields = ['user__email', 'user__first_name', 'user__last_name']
     filterset_fields = []
 
     def get_queryset(self):
@@ -18,7 +20,27 @@ class PatientViewSet(BaseViewSet):
         )
 
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+        serializer = PatientCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        teacher = serializer.save()
+
+        output = PatientListSerializer(teacher, context={"request": request}).data
+        return Response(output, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        patient = Patient.objects.get(pk=kwargs["pk"])
+
+        serializer = PatientUpdateSerializer(
+            patient,
+            data=request.data,
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+        teacher = serializer.save()
+
+        output = PatientListSerializer(teacher, context={"request": request}).data
+        return Response(output, status=status.HTTP_200_OK)
 
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
