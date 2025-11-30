@@ -1,7 +1,10 @@
+from rest_framework import status
+from rest_framework.response import Response
+
 from core.views.base import BaseViewSet
 
 from user.models import Dentist
-from user.serializers import DentistListSerializer
+from user.serializers import DentistListSerializer, DentistCreateSerializer
 
 
 # Create your views here.
@@ -18,7 +21,13 @@ class DentistViewSet(BaseViewSet):
         )
 
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+        serializer = DentistCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        patient = serializer.save()
+
+        output = DentistCreateSerializer(patient, context={"request": request}).data
+        return Response(output, status=status.HTTP_201_CREATED)
 
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
