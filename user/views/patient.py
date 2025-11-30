@@ -23,9 +23,9 @@ class PatientViewSet(BaseViewSet):
         serializer = PatientCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        teacher = serializer.save()
+        patient = serializer.save()
 
-        output = PatientListSerializer(teacher, context={"request": request}).data
+        output = PatientListSerializer(patient, context={"request": request}).data
         return Response(output, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
@@ -37,9 +37,9 @@ class PatientViewSet(BaseViewSet):
             partial=True,
         )
         serializer.is_valid(raise_exception=True)
-        teacher = serializer.save()
+        patient = serializer.save()
 
-        output = PatientListSerializer(teacher, context={"request": request}).data
+        output = PatientListSerializer(patient, context={"request": request}).data
         return Response(output, status=status.HTTP_200_OK)
 
     def list(self, request, *args, **kwargs):
