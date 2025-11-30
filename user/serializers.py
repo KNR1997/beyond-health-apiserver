@@ -149,6 +149,53 @@ class DentistSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class DentistCreateSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(write_only=True)
+    last_name = serializers.CharField(write_only=True)
+    username = serializers.CharField(write_only=True)
+    email = serializers.EmailField(write_only=True)
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = Dentist
+        fields = '__all__'
+        read_only_fields = ["user"]
+
+    def validate_username(self, value):
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("Username already exists.")
+        return value
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Email already exists.")
+        return value
+
+    # --- CREATE ---
+    def create(self, validated_data):
+        # Extract fields NOT in Student model
+        first_name = validated_data.pop("first_name")
+        last_name = validated_data.pop("last_name")
+        username = validated_data.pop("username")
+        email = validated_data.pop("email")
+        password = validated_data.pop("password")
+
+        # Create user
+        user = User.objects.create(
+            first_name=first_name,
+            last_name=last_name,
+            username=username,
+            email=email,
+            role=ROLE.DENTIST.value,
+        )
+        user.set_password(password)
+        user.save()
+
+        # Now validated_data ONLY contains Dentis model fields
+        dentist = Dentist.objects.create(user=user, **validated_data)
+        return dentist
+
+
 class DentistListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dentist
