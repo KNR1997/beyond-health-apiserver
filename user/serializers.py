@@ -15,7 +15,17 @@ class AdminListSerializer(serializers.ModelSerializer):
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'mobile_number', 'email', 'display_name', 'first_name', 'last_name', 'is_active']
+        fields = [
+            'id',
+            'username',
+            'mobile_number',
+            'email',
+            'display_name',
+            'first_name',
+            'last_name',
+            'is_active',
+            'role_name'
+        ]
 
 
 class PatientSerializer(serializers.ModelSerializer):
