@@ -12,7 +12,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(
         default=uuid.uuid4, unique=True, editable=False, db_index=True, primary_key=True
     )
-    username = models.CharField(max_length=128, unique=True)
+    username = models.CharField(max_length=128, blank=True, null=True)
     # user fields
     mobile_number = models.CharField(max_length=255, blank=True, null=True)
     email = models.CharField(max_length=255, null=True, blank=True, unique=True)
