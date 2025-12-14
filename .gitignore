@@ -1,0 +1,32 @@
+# Python
+*.pyc
+__pycache__/
+*~
+*.log
+.coverage
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Django
+*.sqlite3
+local_settings.py
+media/
+
+# Static files
+static/
+
+# IDE-specific files
+.idea/  # For PyCharm or IntelliJ
+.vscode/ # For VS Code (consider only ignoring user settings, not shared config)
+
+# OS generated files
+.DS_Store # macOS
+Thumbs.db # Windows
+
+# Custom additions for testing, etc.
+htmlcov/
+.tox/
