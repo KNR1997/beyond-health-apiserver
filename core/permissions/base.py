@@ -8,8 +8,10 @@ from rest_framework.response import Response
 
 class ROLE(Enum):
     ADMIN = 20
+    DENTIST = 18
     TEACHER = 15
-    STUDENT = 10
+    STUDENT = 12
+    PATIENT = 10
     GUEST = 5
 
 
