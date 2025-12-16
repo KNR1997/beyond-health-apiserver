@@ -1,4 +1,6 @@
 from django.contrib.auth import authenticate
+from django.contrib.auth.backends import ModelBackend
+from django.db.models import Q
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -6,6 +8,7 @@ from rest_framework.status import HTTP_200_OK
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from authentication.models import User
 from authentication.serializers import UserLiteSerializer, SignupSerializer, SigninSerializer
 from core.permissions.base import ROLE
 from core.permissions.permissions import IsAdminOrReadOnly
@@ -41,9 +44,14 @@ class SigninView(APIView):
         serializer = SigninSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        mobile_number = serializer.validated_data['mobile_number']
+        login = serializer.validated_data['login']  # email or mobile
         password = serializer.validated_data['password']
-        user = authenticate(request, mobile_number=mobile_number, password=password)
+
+        user = authenticate(
+            request,
+            username=login,
+            password=password
+        )
 
         if user is None:
             return Response(
@@ -52,11 +60,13 @@ class SigninView(APIView):
             )
 
         tokens = get_tokens_for_user(user)
-        return Response({
-            'tokens': tokens,
-            'permissions': ['super_admin'],
-            'role': 'super_admin'
-        }, status=status.HTTP_200_OK
+        return Response(
+            {
+                'tokens': tokens,
+                'permissions': ['super_admin'],
+                'role': 'super_admin'
+            },
+            status=status.HTTP_200_OK
         )
 
 
