@@ -20,19 +20,20 @@ class SignupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'password', 'password2', 'email', 'first_name', 'last_name')
+        fields = ('username', 'password', 'password2', 'email', 'first_name', 'last_name', 'mobile_number')
 
     def create(self, validated_data):
         user = User.objects.create_user(
             email=validated_data['email'],
             username=validated_data['username'],
-            password=validated_data['password']
+            password=validated_data['password'],
+            mobile_number=validated_data['mobile_number'],
         )
         return user
 
 
 class SigninSerializer(serializers.Serializer):
-    email = serializers.EmailField()
+    mobile_number = serializers.CharField()
     password = serializers.CharField(write_only=True)
 
 

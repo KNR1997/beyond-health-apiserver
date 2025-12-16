@@ -41,9 +41,9 @@ class SigninView(APIView):
         serializer = SigninSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        email = serializer.validated_data['email']
+        mobile_number = serializer.validated_data['mobile_number']
         password = serializer.validated_data['password']
-        user = authenticate(request, email=email, password=password)
+        user = authenticate(request, mobile_number=mobile_number, password=password)
 
         if user is None:
             return Response(
