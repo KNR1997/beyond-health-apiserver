@@ -63,7 +63,8 @@ INSTALLED_APPS = [
 
     'authentication',
     'appointments',
-    'user'
+    'user',
+    'medical_records'
 ]
 
 SIMPLE_JWT = {
