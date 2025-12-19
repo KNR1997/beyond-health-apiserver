@@ -52,7 +52,7 @@ class PatientCreateSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(write_only=True)
     last_name = serializers.CharField(write_only=True)
     password = serializers.CharField(write_only=True)
-    username = serializers.CharField(write_only=True, required=False, allow_blank=True, allow_null=True)
+    # username = serializers.CharField(write_only=True, required=False, allow_blank=True, allow_null=True)
     email = serializers.EmailField(write_only=True, required=False, allow_blank=True, allow_null=True)
 
     class Meta:
@@ -66,7 +66,7 @@ class PatientCreateSerializer(serializers.ModelSerializer):
         # Extract fields NOT in Student model
         first_name = validated_data.pop("first_name")
         last_name = validated_data.pop("last_name")
-        username = validated_data.pop("username")
+        # username = validated_data.pop("username")
         email = validated_data.pop("email")
         password = validated_data.pop("password")
         mobile_number = validated_data.pop("mobile_number")
@@ -75,7 +75,7 @@ class PatientCreateSerializer(serializers.ModelSerializer):
         user = User.objects.create(
             first_name=first_name,
             last_name=last_name,
-            username=username,
+            # username=username,
             email=email,
             role=ROLE.PATIENT.value,
             mobile_number=mobile_number,
