@@ -4,7 +4,7 @@ from medical_records.serializers import ProblemListSerializer
 
 
 # Create your views here.
-class ProblemViewSet(BaseViewSet):
+class DentalProblemViewSet(BaseViewSet):
     model = Problem
     serializer_class = ProblemListSerializer
 
