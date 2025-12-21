@@ -22,7 +22,13 @@ urlpatterns = [
 
     path(
         "patient-dental-problems/",
-        PatientDentalProblemViewSet.as_view({"get": "list", "post": "create"}),
+        PatientDentalProblemViewSet.as_view({"post": "create"}),
         name="patient-dental-problem",
     ),
+
+    path(
+        "patients/<uuid:pk>/dental-problems/",
+        PatientDentalProblemViewSet.as_view({"get": "retrieve", "put": "update"}),
+        name="patient-dental-problem",
+    )
 ]
