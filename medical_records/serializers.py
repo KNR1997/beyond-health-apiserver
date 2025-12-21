@@ -46,10 +46,16 @@ class PatientProblemBulkCreateSerializer(serializers.Serializer):
         queryset=Patient.objects.all()
     )
     problems = PatientProblemItemSerializer(many=True)
+    deleted_problem_ids = serializers.ListField(
+        child=serializers.UUIDField(),
+        required=False,
+        allow_empty=True,
+    )
 
     def validate(self, attrs):
         patient = attrs['patient']
         problems = attrs['problems']
+        deleted_ids = attrs.get('deleted_problem_ids', [])
 
         # Validate IDs belong to this patient
         ids = [item['id'] for item in problems if 'id' in item]
@@ -59,10 +65,10 @@ class PatientProblemBulkCreateSerializer(serializers.Serializer):
             patient=patient
         ).values_list('id', flat=True)
 
-        if len(existing) != len(ids):
-            raise serializers.ValidationError(
-                "One or more PatientProblem IDs are invalid for this patient."
-            )
+        # if len(existing) != len(ids):
+        #     raise serializers.ValidationError(
+        #         "One or more PatientProblem IDs are invalid for this patient."
+        #     )
 
         # Prevent duplicate problems in request
         problem_ids = [item['problem'].id for item in problems]
@@ -71,12 +77,34 @@ class PatientProblemBulkCreateSerializer(serializers.Serializer):
                 "Duplicate problems in request."
             )
 
+        # ---- VALIDATE DELETED IDS ----
+        if deleted_ids:
+            delete_existing = set(
+                PatientProblem.objects.filter(
+                    id__in=deleted_ids,
+                    patient=patient
+                ).values_list('id', flat=True)
+            )
+
+            if len(delete_existing) != len(deleted_ids):
+                raise serializers.ValidationError(
+                    "One or more deleted_problem_ids are invalid for this patient."
+                )
+
         return attrs
 
     @transaction.atomic
     def create(self, validated_data):
         patient = validated_data['patient']
         problems_data = validated_data['problems']
+        deleted_ids = validated_data.get('deleted_problem_ids', [])
+
+        # ---- DELETE ----
+        if deleted_ids:
+            PatientProblem.objects.filter(
+                patient=patient,
+                id__in=deleted_ids
+            ).delete()
 
         to_create = []
         to_update = []
@@ -92,7 +120,7 @@ class PatientProblemBulkCreateSerializer(serializers.Serializer):
         }
 
         for item in problems_data:
-            if 'id' in item:
+            if item['id'] is not None:
                 # UPDATE
                 patient_problem = existing_map[item['id']]
                 patient_problem.problem = item['problem']
