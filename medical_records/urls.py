@@ -1,7 +1,8 @@
 from django.urls import path
 
 from medical_records.views.dental_problem import DentalProblemViewSet
-from medical_records.views.patient_dental_problem import PatientDentalProblemViewSet
+from medical_records.views.patient_dental_problem import PatientDentalProblemViewSet, \
+    PatientDentalProblemStatusChangeEndpoint
 
 urlpatterns = [
     path(
@@ -18,6 +19,11 @@ urlpatterns = [
             "delete": "destroy",
         }),
         name="problem",
+    ),
+    path(
+        "dental-problem-status-change",
+        PatientDentalProblemStatusChangeEndpoint.as_view(),
+        name="patient-dental-status-change",
     ),
 
     path(
