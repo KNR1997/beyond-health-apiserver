@@ -92,7 +92,7 @@ class PatientUpdateSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(write_only=True, required=False)
     last_name = serializers.CharField(write_only=True, required=False)
     username = serializers.CharField(write_only=True, required=False)
-    email = serializers.EmailField(write_only=True, required=False)
+    email = serializers.EmailField(write_only=True, required=False, allow_blank=True, allow_null=True)
 
     class Meta:
         model = Patient
@@ -100,17 +100,17 @@ class PatientUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ["user"]
 
     # --- VALIDATION ---
-    def validate_username(self, value):
-        user = self.instance.user
-        if User.objects.filter(username=value).exclude(id=user.id).exists():
-            raise serializers.ValidationError("User with this username already exists.")
-        return value
+    # def validate_username(self, value):
+    #     user = self.instance.user
+    #     if User.objects.filter(username=value).exclude(id=user.id).exists():
+    #         raise serializers.ValidationError("User with this username already exists.")
+    #     return value
 
-    def validate_email(self, value):
-        user = self.instance.user
-        if User.objects.filter(email=value).exclude(id=user.id).exists():
-            raise serializers.ValidationError("User with this email already exists.")
-        return value
+    # def validate_email(self, value):
+    #     user = self.instance.user
+    #     if User.objects.filter(email=value).exclude(id=user.id).exists():
+    #         raise serializers.ValidationError("User with this email already exists.")
+    #     return value
 
     # --- UPDATE ---
     def update(self, instance, validated_data):
