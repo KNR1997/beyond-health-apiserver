@@ -1,7 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
 
-from medical_records.models import Problem, PatientProblem
+from medical_records.models import Problem, PatientProblem, MedicalVital
 from user.models import Patient
 
 
@@ -184,3 +184,9 @@ class PatientProblemListSerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientProblem
         fields = ['id', 'problem', 'severity']
+
+
+class MedicalVitalListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MedicalVital
+        fields = ['id', 'name', 'description', 'is_active']
