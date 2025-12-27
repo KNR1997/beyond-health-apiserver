@@ -13,6 +13,8 @@ class Patient(BaseModel):
     )
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    age = models.IntegerField()
+    nic = models.CharField(max_length=12)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     address = models.TextField(blank=True)
     insurance_provider = models.CharField(max_length=100, blank=True)
