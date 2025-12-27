@@ -43,7 +43,9 @@ class PatientListSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'user',
-            'gender'
+            'gender',
+            'age',
+            'nic'
         ]
 
 
@@ -59,6 +61,12 @@ class PatientCreateSerializer(serializers.ModelSerializer):
         model = Patient
         fields = '__all__'
         read_only_fields = ["user"]
+
+    # --- VALIDATION ---
+    def validate_mobile_number(self, value):
+        if User.objects.filter(mobile_number=value).exists():
+            raise serializers.ValidationError("User with this mobile number already exists.")
+        return value
 
     # --- CREATE (TRANSACTIONAL) ---
     @transaction.atomic
