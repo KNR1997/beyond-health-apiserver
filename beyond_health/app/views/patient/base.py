@@ -2,8 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from beyond_health.app.base import BaseViewSet
-from beyond_health.app.serializers.dentist import PatientListSerializer
-from beyond_health.app.serializers.patient import PatientCreateSerializer, PatientUpdateSerializer
+from beyond_health.app.serializers.patient import PatientSerializer, PatientListSerializer
 from beyond_health.db.models import Patient
 
 
@@ -21,7 +20,7 @@ class PatientViewSet(BaseViewSet):
         )
 
     def create(self, request, *args, **kwargs):
-        serializer = PatientCreateSerializer(data=request.data)
+        serializer = PatientSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         patient = serializer.save()
@@ -32,7 +31,7 @@ class PatientViewSet(BaseViewSet):
     def update(self, request, *args, **kwargs):
         patient = Patient.objects.get(pk=kwargs["pk"])
 
-        serializer = PatientUpdateSerializer(
+        serializer = PatientSerializer(
             patient,
             data=request.data,
             partial=True,

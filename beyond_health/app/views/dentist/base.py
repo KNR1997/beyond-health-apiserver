@@ -16,8 +16,6 @@ class DentistViewSet(BaseViewSet):
     search_fields = []
     filterset_fields = []
 
-    lookup_field = "slug"
-
     def get_queryset(self):
         return (
             self.filter_queryset(super().get_queryset())
@@ -27,22 +25,32 @@ class DentistViewSet(BaseViewSet):
         return super().list(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
-        slug = kwargs.get("slug")
-        course = self.get_queryset().filter(slug=slug).first()
-
-        if not course:
-            return Response({"detail": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = DentistSerializer(course)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return super().retrieve(request, *args, **kwargs)
 
     @allow_permission([ROLE.ADMIN])
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+        serializer = DentistSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        dentist = serializer.save()
+
+        output = DentistListSerializer(dentist, context={"request": request}).data
+        return Response(output, status=status.HTTP_201_CREATED)
 
     @allow_permission([ROLE.ADMIN])
     def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
+        dentist = Dentist.objects.get(pk=kwargs["pk"])
+        serializer = DentistSerializer(
+            dentist,
+            data=request.data,
+            partial=True,
+        )
+
+        serializer.is_valid(raise_exception=True)
+        dentist = serializer.save()
+
+        output = DentistListSerializer(dentist, context={"request": request}).data
+        return Response(output, status=status.HTTP_200_OK)
 
     @allow_permission([ROLE.ADMIN])
     def partial_update(self, request, *args, **kwargs):
