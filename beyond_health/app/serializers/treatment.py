@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from beyond_health.db.models import Treatment, TreatmentPlanItem
+from beyond_health.db.models import Treatment, TreatmentPlanItem, TreatmentPlan
 
 
 class TreatmentSerializer(serializers.ModelSerializer):
@@ -26,6 +26,24 @@ class TreatmentListSerializer(serializers.ModelSerializer):
             'duration',
             'cost',
             'is_active',
+        ]
+
+
+class TreatmentPlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TreatmentPlan
+        fields = '__all__'
+
+
+class TreatmentPlanListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TreatmentPlan
+        fields = [
+            'id',
+            'name',
+            'description',
+            'status',
+            'total_cost',
         ]
 
 

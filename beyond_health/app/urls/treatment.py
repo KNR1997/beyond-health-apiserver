@@ -1,6 +1,8 @@
 from django.urls import path
 
 from beyond_health.app.views.treatment.base import TreatmentViewSet
+from beyond_health.app.views.treatment.plan import TreatmentPlanViewSet
+from beyond_health.app.views.treatment.plan_item import TreatmentPlanItemViewSet
 
 urlpatterns = [
     path(
@@ -20,8 +22,14 @@ urlpatterns = [
     ),
 
     path(
-        "treatments/<uuid:pk>/plan-items",
-        TreatmentViewSet.as_view({"get": "list", "post": "create"}),
+        "treatment-plans/",
+        TreatmentPlanViewSet.as_view({"get": "list", "post": "create"}),
+        name="treatment-plan",
+    ),
+
+    path(
+        "treatments/<uuid:treatment_id>/plan-items/",
+        TreatmentPlanItemViewSet.as_view({"get": "list", "post": "create"}),
         name="treatments-plan-item",
     ),
 ]

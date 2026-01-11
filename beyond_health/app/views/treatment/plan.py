@@ -2,15 +2,15 @@ from django.db import IntegrityError
 from rest_framework import status
 from rest_framework.response import Response
 
-from beyond_health.app.serializers.treatment import TreatmentPlanItemListSerializer, TreatmentPlanItemSerializer
+from beyond_health.app.serializers.treatment import TreatmentPlanListSerializer, TreatmentPlanSerializer
 from beyond_health.app.views.base import BaseViewSet
-from beyond_health.db.models import TreatmentPlanItem, Patient
+from beyond_health.db.models import TreatmentPlan, Patient
 
 
 # Create your views here.
-class TreatmentPlanItemViewSet(BaseViewSet):
-    model = TreatmentPlanItem
-    serializer_class = TreatmentPlanItemListSerializer
+class TreatmentPlanViewSet(BaseViewSet):
+    model = TreatmentPlan
+    serializer_class = TreatmentPlanListSerializer
 
     search_fields = ["name"]
     filterset_fields = []
@@ -25,15 +25,15 @@ class TreatmentPlanItemViewSet(BaseViewSet):
 
     def create(self, request, *args, **kwargs):
         try:
-            serializer = TreatmentPlanItemSerializer(
+            serializer = TreatmentPlanSerializer(
                 data={**request.data}
             )
             if serializer.is_valid():
                 serializer.save()
 
-                plan_item = self.get_queryset().filter(pk=serializer.data["id"]).first()
+                treatment_plan = self.get_queryset().filter(pk=serializer.data["id"]).first()
 
-                serializer = TreatmentPlanItemListSerializer(plan_item)
+                serializer = TreatmentPlanListSerializer(treatment_plan)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except IntegrityError as e:
@@ -42,3 +42,7 @@ class TreatmentPlanItemViewSet(BaseViewSet):
                     {"name": "The project name is already taken"},
                     status=status.HTTP_409_CONFLICT,
                 )
+        except Patient.DoesNotExist:
+            return Response(
+                {"error": "patient does not exist"}, status=status.HTTP_404_NOT_FOUND
+            )
