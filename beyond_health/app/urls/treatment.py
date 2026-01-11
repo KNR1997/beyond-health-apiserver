@@ -6,7 +6,7 @@ urlpatterns = [
     path(
         "treatments/",
         TreatmentViewSet.as_view({"get": "list", "post": "create"}),
-        name="dentist",
+        name="treatment",
     ),
     path(
         "treatments/<uuid:pk>/",
@@ -16,6 +16,12 @@ urlpatterns = [
             "patch": "partial_update",
             "delete": "destroy",
         }),
-        name="dentist",
+        name="treatments",
+    ),
+
+    path(
+        "treatments/<uuid:pk>/plan-items",
+        TreatmentViewSet.as_view({"get": "list", "post": "create"}),
+        name="treatments-plan-item",
     ),
 ]
