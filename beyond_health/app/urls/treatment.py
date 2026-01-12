@@ -26,9 +26,19 @@ urlpatterns = [
         TreatmentPlanViewSet.as_view({"get": "list", "post": "create"}),
         name="treatment-plan",
     ),
+    path(
+        "treatment-plans/<uuid:pk>/",
+        TreatmentPlanViewSet.as_view({
+            "get": "retrieve",
+            "put": "update",
+            "patch": "partial_update",
+            "delete": "destroy",
+        }),
+        name="treatment-plan",
+    ),
 
     path(
-        "treatments/<uuid:treatment_id>/plan-items/",
+        "treatment-plans/<uuid:treatment_plan_id>/items/",
         TreatmentPlanItemViewSet.as_view({"get": "list", "post": "create"}),
         name="treatments-plan-item",
     ),
