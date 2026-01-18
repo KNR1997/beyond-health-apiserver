@@ -13,6 +13,7 @@ class Patient(BaseModel):
     )
 
     name = models.CharField(max_length=255)
+    email = models.CharField(max_length=255, null=True, blank=True)
     mobile_number = models.CharField(max_length=255, unique=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     address = models.TextField(blank=True)
