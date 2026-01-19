@@ -18,12 +18,4 @@ class TreatmentLiteSerializer(serializers.ModelSerializer):
 class TreatmentListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Treatment
-        fields = [
-            'id',
-            'name',
-            'category',
-            'description',
-            'duration',
-            'cost',
-            'is_active',
-        ]
+        fields = '__all__'

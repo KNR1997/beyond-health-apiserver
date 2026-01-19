@@ -38,6 +38,8 @@ class PatientDentalProblemListSerializer(serializers.ModelSerializer):
         fields = ['id', 'dental_problem', 'severity']
 
 
+
+
 class PatientDentalProblemItemSerializer(serializers.Serializer):
     id = serializers.UUIDField(required=False, allow_null=True)
     problem = serializers.PrimaryKeyRelatedField(
