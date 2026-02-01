@@ -40,7 +40,7 @@ class TreatmentPlan(BaseModel):
     dentist = models.ForeignKey(
         'db.Dentist', on_delete=models.CASCADE
     )
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, null=True, blank=True)
     description = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='proposed')
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
