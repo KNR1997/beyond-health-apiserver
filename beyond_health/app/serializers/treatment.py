@@ -56,9 +56,18 @@ class TreatmentPlanSerializer(serializers.ModelSerializer):
 
 
 class TreatmentPlanItemListSerializer(serializers.ModelSerializer):
+    treatment = TreatmentListSerializer()
+
     class Meta:
         model = TreatmentPlanItem
-        fields = '__all__'
+        fields = [
+            'id',
+            'quantity',
+            'cost',
+            'notes',
+            'tooth_number',
+            'treatment',
+        ]
 
 
 class TreatmentPlanItemCustomSerializer(serializers.Serializer):

@@ -46,9 +46,9 @@ urlpatterns = [
     path(
         "treatment-plans/<uuid:pk>/items",
         TreatmentPlanItemViewSet.as_view({
+            "get": "retrieve",
             "post": "create",
         }),
         name="treatment-plan-items",
     ),
 ]
- 
