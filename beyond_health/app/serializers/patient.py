@@ -1,11 +1,12 @@
 from django.db import transaction
 from rest_framework import serializers
 
+from beyond_health.app.serializers.base import BaseSerializer
 from beyond_health.app.serializers.dental_problem import DentalProblemLiteSerializer
 from beyond_health.db.models import PatientDentalProblem, Patient, DentalProblem
 
 
-class PatientCreateSerializer(serializers.ModelSerializer):
+class PatientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Patient
         fields = '__all__'
@@ -13,14 +14,20 @@ class PatientCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return super().create(validated_data)
 
-
-class PatientUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Patient
-        fields = "__all__"
-
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
+
+
+class PatientListSerializer(BaseSerializer):
+    class Meta:
+        model = Patient
+        fields = [
+            'id',
+            'name',
+            'email',
+            'mobile_number',
+            'gender',
+        ]
 
 
 class PatientDentalProblemListSerializer(serializers.ModelSerializer):
@@ -29,6 +36,8 @@ class PatientDentalProblemListSerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientDentalProblem
         fields = ['id', 'dental_problem', 'severity']
+
+
 
 
 class PatientDentalProblemItemSerializer(serializers.Serializer):
