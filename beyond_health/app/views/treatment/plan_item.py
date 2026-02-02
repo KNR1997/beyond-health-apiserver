@@ -32,6 +32,16 @@ class TreatmentPlanItemViewSet(BaseViewSet):
             return Response(None, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def update(self, request, *args, **kwargs):
+        serializer = TreatmentPlanItemsCreateSerializer(
+            data={**request.data}
+        )
+
+        if serializer.is_valid():
+            serializer.update(None, serializer.validated_data)
+            return Response(None, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, *args, **kwargs):
         treatment_plan_id = kwargs.get('pk')

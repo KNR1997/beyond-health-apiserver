@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.generics import get_object_or_404
 
 from beyond_health.app.serializers.dentist import DentistListSerializer
 from beyond_health.app.serializers.patient import PatientListSerializer
@@ -71,10 +72,11 @@ class TreatmentPlanItemListSerializer(serializers.ModelSerializer):
 
 
 class TreatmentPlanItemCustomSerializer(serializers.Serializer):
+    id = serializers.UUIDField(required=False, allow_null=True)
     treatment_id = serializers.UUIDField()
     tooth_number = serializers.CharField()
     cost = serializers.FloatField()
-    note = serializers.CharField()
+    notes = serializers.CharField()
 
 
 class TreatmentPlanItemsCreateSerializer(serializers.Serializer):
@@ -84,9 +86,29 @@ class TreatmentPlanItemsCreateSerializer(serializers.Serializer):
     def create(self, validated_data):
         for item in validated_data['items']:
             TreatmentPlanItem.objects.create(
-                treatment_plan_id = validated_data['treatment_plan_id'],
-                treatment_id = item['treatment_id'],
-                tooth_number = item['tooth_number'],
+                treatment_plan_id=validated_data['treatment_plan_id'],
+                treatment_id=item['treatment_id'],
+                tooth_number=item['tooth_number'],
                 cost=item['cost'],
-                notes=item['note'],
+                notes=item['notes'],
             )
+
+    def update(self, instance, validated_data):
+        for item in validated_data['items']:
+            if item['id']:
+                treatment_plan_item = get_object_or_404(TreatmentPlanItem, pk=item['id'])
+                if treatment_plan_item:
+                    treatment_plan_item.treatment_id = item['treatment_id']
+                    treatment_plan_item.tooth_number = item['tooth_number']
+                    treatment_plan_item.cost = item['cost']
+                    treatment_plan_item.notes = item['notes']
+
+                    treatment_plan_item.save()
+            else:
+                TreatmentPlanItem.objects.create(
+                    treatment_plan_id=validated_data['treatment_plan_id'],
+                    treatment_id=item['treatment_id'],
+                    tooth_number=item['tooth_number'],
+                    cost=item['cost'],
+                    notes=item['notes'],
+                )

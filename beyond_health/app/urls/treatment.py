@@ -48,6 +48,7 @@ urlpatterns = [
         TreatmentPlanItemViewSet.as_view({
             "get": "retrieve",
             "post": "create",
+            "put": "update",
         }),
         name="treatment-plan-items",
     ),
