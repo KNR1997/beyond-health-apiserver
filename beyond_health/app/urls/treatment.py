@@ -3,6 +3,7 @@ from django.urls import path
 from beyond_health.app.views.patient.treatment import PatientTreatmentStatusChangeEndpoint
 from beyond_health.app.views.treatment.base import TreatmentViewSet
 from beyond_health.app.views.treatment.plan import TreatmentPlanViewSet
+from beyond_health.app.views.treatment.plan_item import TreatmentPlanItemViewSet
 
 urlpatterns = [
     path(
@@ -40,5 +41,15 @@ urlpatterns = [
             "delete": "destroy",
         }),
         name="treatment-plan",
+    ),
+
+    path(
+        "treatment-plans/<uuid:pk>/items",
+        TreatmentPlanItemViewSet.as_view({
+            "get": "retrieve",
+            "post": "create",
+            "put": "update",
+        }),
+        name="treatment-plan-items",
     ),
 ]

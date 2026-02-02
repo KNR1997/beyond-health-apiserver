@@ -1,10 +1,9 @@
-from django.db import IntegrityError
 from rest_framework import status
 from rest_framework.response import Response
 
-from beyond_health.app.serializers.treatment import TreatmentPlanItemListSerializer, TreatmentPlanItemSerializer
+from beyond_health.app.serializers.treatment import TreatmentPlanItemListSerializer, TreatmentPlanItemsCreateSerializer
 from beyond_health.app.views.base import BaseViewSet
-from beyond_health.db.models import TreatmentPlanItem, Patient
+from beyond_health.db.models import TreatmentPlanItem
 
 
 # Create your views here.
@@ -24,21 +23,30 @@ class TreatmentPlanItemViewSet(BaseViewSet):
         return super().list(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
-        try:
-            serializer = TreatmentPlanItemSerializer(
-                data={**request.data}
-            )
-            if serializer.is_valid():
-                serializer.save()
+        serializer = TreatmentPlanItemsCreateSerializer(
+            data={**request.data}
+        )
+        if serializer.is_valid():
+            serializer.save()
 
-                plan_item = self.get_queryset().filter(pk=serializer.data["id"]).first()
+            return Response(None, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-                serializer = TreatmentPlanItemListSerializer(plan_item)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except IntegrityError as e:
-            if "already exists" in str(e):
-                return Response(
-                    {"name": "The project name is already taken"},
-                    status=status.HTTP_409_CONFLICT,
-                )
+    def update(self, request, *args, **kwargs):
+        serializer = TreatmentPlanItemsCreateSerializer(
+            data={**request.data}
+        )
+
+        if serializer.is_valid():
+            serializer.update(None, serializer.validated_data)
+            return Response(None, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, *args, **kwargs):
+        treatment_plan_id = kwargs.get('pk')
+
+        plan_items = TreatmentPlanItem.objects.filter(treatment_plan_id=treatment_plan_id)
+        serializer = TreatmentPlanItemListSerializer(plan_items, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
