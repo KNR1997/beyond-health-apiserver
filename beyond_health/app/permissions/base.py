@@ -13,6 +13,14 @@ class ROLE(Enum):
     GUEST = 5
 
 
+ROLE_PERMISSIONS = {
+    ROLE.ADMIN: ["super_admin"],
+    ROLE.DENTIST: ["dentist"],
+    ROLE.PATIENT: ["patient"],
+    ROLE.GUEST: ["guest"],
+}
+
+
 def allow_permission(allowed_roles, creator=False, model=None):
     """
     Decorator for role and creator-based access control.
