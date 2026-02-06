@@ -4,6 +4,7 @@ from .patient import urlpatterns as patient_urls
 from .roster import urlpatterns as roster_urls
 from .settings import urlpatterns as settings_urls
 from .settings import urlpatterns as settings_urls
+from .shift import urlpatterns as shift_urls
 from .treatment import urlpatterns as treatment_urls
 from .user import urlpatterns as user_urls
 
@@ -15,4 +16,5 @@ urlpatterns = [
     *user_urls,
     *treatment_urls,
     *roster_urls,
+    *shift_urls,
 ]
