@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 
@@ -94,7 +96,19 @@ class TreatmentPlanItemsCreateSerializer(serializers.Serializer):
             )
 
     def update(self, instance, validated_data):
+
+        # Get TreatmentPlan related to items
+        treatment_plan = get_object_or_404(
+            TreatmentPlan,
+            pk=validated_data['treatment_plan_id']
+        )
+
+        # Reset total_cost before recalculating
+        treatment_plan.total_cost = Decimal('0.00')
+
         for item in validated_data['items']:
+            cost = Decimal(str(item['cost']))
+
             if item['id']:
                 treatment_plan_item = get_object_or_404(TreatmentPlanItem, pk=item['id'])
                 if treatment_plan_item:
@@ -112,3 +126,8 @@ class TreatmentPlanItemsCreateSerializer(serializers.Serializer):
                     cost=item['cost'],
                     notes=item['notes'],
                 )
+            # Sum total_cost
+            treatment_plan.total_cost += cost
+
+        treatment_plan.save()
+        return treatment_plan
