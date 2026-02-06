@@ -43,24 +43,25 @@ class SigninView(APIView):
         serializer = SigninSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        email = serializer.validated_data['email']
-        password = serializer.validated_data['password']
-        user = authenticate(request, email=email, password=password)
+        user = authenticate(
+            request,
+            email=serializer.validated_data['email'],
+            password=serializer.validated_data['password']
+        )
 
-        if user is None:
+        if not user:
             return Response(
                 {'detail': 'Invalid credentials'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        tokens = get_tokens_for_user(user)
-        # permission = 'super_admin' if user.role == ROLE.ADMIN.value else 'student'
-        permission = 'super_admin' # todo -> create something reusable in permissions
-        return Response({
-            'tokens': tokens,
-            'permissions': [permission],
-            'role': permission
-        }, status=status.HTTP_200_OK
+        return Response(
+            {
+                'tokens': get_tokens_for_user(user),
+                'permissions': user.permissions,
+                'role': user.role_name,
+            },
+            status=status.HTTP_200_OK
         )
 
 

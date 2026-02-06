@@ -47,5 +47,19 @@ class TreatmentPlanViewSet(BaseViewSet):
                 {"error": "patient does not exist"}, status=status.HTTP_404_NOT_FOUND
             )
 
+    def update(self, request, *args, **kwargs):
+        treatment_plan = TreatmentPlan.objects.get(pk=kwargs["pk"])
+
+        serializer = TreatmentPlanSerializer(
+            treatment_plan,
+            data=request.data,
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        treatment_plan = serializer.save()
+
+        output = TreatmentPlanListSerializer(treatment_plan, context={"request": request}).data
+        return Response(output, status=status.HTTP_200_OK)
+
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
