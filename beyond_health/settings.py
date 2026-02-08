@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
 from pathlib import Path
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,7 +33,7 @@ if DEBUG:
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3002",
     "http://localhost:3006",
-    "https://pickbazar-admin-steel.vercel.app"
+    "https://beyond-health-admin.vercel.app"
 ]
 
 # Application definition
@@ -97,12 +98,12 @@ WSGI_APPLICATION = 'beyond_health.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 # DATABASES = {
 #     "default": {
@@ -110,10 +111,19 @@ DATABASES = {
 #         "NAME": os.getenv("POSTGRES_DB", "app"),
 #         "USER": os.getenv("POSTGRES_USER", "app"),
 #         "PASSWORD": os.getenv("POSTGRES_PASSWORD", "app"),
-#         "HOST": "db",
-#         "PORT": 5432,
+#         "HOST": os.getenv("POSTGRES_HOST", "db"),
+#         "PORT": os.getenv("POSTGRES_PORT", "5432"),
 #     }
 # }
+
+DATABASES = {
+    "default": dj_database_url.parse(
+        os.environ["DATABASE_URL"],
+        conn_max_age=600,
+        ssl_require=True,
+    )
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
