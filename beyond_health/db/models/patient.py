@@ -15,6 +15,8 @@ class Patient(BaseModel):
     name = models.CharField(max_length=255)
     email = models.CharField(max_length=255, null=True, blank=True)
     mobile_number = models.CharField(max_length=255, unique=True)
+    nic = models.CharField(max_length=20, null=True, blank=True)
+    age = models.CharField(max_length=3)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     address = models.TextField(blank=True)
     insurance_provider = models.CharField(max_length=100, blank=True)
