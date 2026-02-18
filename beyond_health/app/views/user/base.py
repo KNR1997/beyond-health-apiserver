@@ -9,7 +9,7 @@ class UserViewSet(BaseViewSet):
     model = User
     serializer_class = UserListSerializer
 
-    search_fields = []
+    search_fields = ['first_name', 'last_name']
     filterset_fields = []
 
     lookup_field = "slug"

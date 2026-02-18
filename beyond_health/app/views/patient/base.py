@@ -11,7 +11,7 @@ class PatientViewSet(BaseViewSet):
     model = Patient
     serializer_class = PatientListSerializer
 
-    search_fields = ['user__email', 'user__first_name', 'user__last_name']
+    search_fields = ["name"]
     filterset_fields = []
 
     def get_queryset(self):
