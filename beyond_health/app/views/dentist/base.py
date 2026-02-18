@@ -13,7 +13,7 @@ class DentistViewSet(BaseViewSet):
     model = Dentist
     serializer_class = DentistListSerializer
 
-    search_fields = []
+    search_fields = ['user__first_name','user__last_name']
     filterset_fields = []
 
     def get_queryset(self):
