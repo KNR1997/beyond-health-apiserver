@@ -27,8 +27,8 @@ class PatientListSerializer(BaseSerializer):
             'email',
             'mobile_number',
             'gender',
-            'nic',
-            'age',
+            # 'nic',
+            # 'age',
         ]
 
 
