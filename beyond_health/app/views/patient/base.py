@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from beyond_health.app.base import BaseViewSet
+from beyond_health.app.permissions.base import allow_permission, ROLE
 from beyond_health.app.serializers.patient import PatientSerializer, PatientListSerializer
 from beyond_health.db.models import Patient
 
@@ -19,6 +20,7 @@ class PatientViewSet(BaseViewSet):
             self.filter_queryset(super().get_queryset())
         )
 
+    @allow_permission([ROLE.ADMIN])
     def create(self, request, *args, **kwargs):
         serializer = PatientSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
