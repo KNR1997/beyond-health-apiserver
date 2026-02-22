@@ -15,4 +15,9 @@ class Migration(migrations.Migration):
             name='nic',
             field=models.CharField(blank=True, max_length=20, null=True),
         ),
+        migrations.AddField(
+            model_name='patient',
+            name='dob',
+            field=models.DateField(blank=True, null=True),
+        ),
     ]
