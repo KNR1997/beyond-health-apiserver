@@ -1,6 +1,6 @@
 from django.urls import path
 
-from beyond_health.app.views.dentist.base import DentistViewSet
+from beyond_health.app.views.dentist.base import DentistViewSet, DentistRestPasswordEndpoint
 
 urlpatterns = [
     path(
@@ -18,4 +18,9 @@ urlpatterns = [
         }),
         name="dentist",
     ),
+    path('dentists/reset-password',
+         DentistRestPasswordEndpoint.as_view(),
+         name='change-password'
+         ),
+
 ]

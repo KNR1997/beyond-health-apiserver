@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from beyond_health.app.permissions.base import ROLE
 from beyond_health.app.serializers.base import BaseSerializer
 from beyond_health.app.serializers.user import UserListSerializer
 from beyond_health.db.models import Dentist, User
@@ -56,6 +57,7 @@ class DentistSerializer(BaseSerializer):
             last_name=last_name,
             email=email,
             mobile_number=mobile_number,
+            role=ROLE.DENTIST.value
         )
 
         # create Dentist

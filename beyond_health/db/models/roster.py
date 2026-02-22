@@ -5,15 +5,18 @@ from beyond_health.db.models.base import BaseModel
 
 
 class RosterWeek(BaseModel):
-    STATUS_CHOICES = (
-        ('DRAFT', 'Draft'),
-        ('PUBLISHED', 'Published'),
-        ('LOCKED', 'Locked'),
-    )
+    class Status(models.TextChoices):
+        DRAFT = 'DRAFT', 'Draft'
+        PUBLISHED = 'PUBLISHED', 'Published'
+        LOCKED = 'LOCKED', 'Locked'
 
     week_start_date = models.DateField(unique=True)
     week_end_date = models.DateField()
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='DRAFT')
+    status = models.CharField(
+        max_length=10,
+        choices=Status.choices,
+        default='DRAFT'
+    )
 
     def __str__(self):
         return f"Roster {self.week_start_date}"
