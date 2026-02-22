@@ -7,7 +7,11 @@ from beyond_health.db.models import User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        fields = [
+            'id',
+            'display_name',
+            'mobile_number',
+        ]
 
 
 class UserListSerializer(serializers.ModelSerializer):
