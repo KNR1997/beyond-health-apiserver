@@ -1,10 +1,12 @@
 # Third party imports
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
 
 from beyond_health.app.base import BaseViewSet
 from beyond_health.app.permissions.base import allow_permission, ROLE
 from beyond_health.app.serializers.dentist import DentistListSerializer, DentistSerializer
+from beyond_health.app.views.base import BaseAPIView
 from beyond_health.db.models import Dentist
 
 
@@ -13,7 +15,7 @@ class DentistViewSet(BaseViewSet):
     model = Dentist
     serializer_class = DentistListSerializer
 
-    search_fields = ['user__first_name','user__last_name']
+    search_fields = ['user__first_name', 'user__last_name']
     filterset_fields = []
 
     def get_queryset(self):
@@ -59,3 +61,17 @@ class DentistViewSet(BaseViewSet):
     @allow_permission([ROLE.ADMIN])
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
+
+
+class DentistRestPasswordEndpoint(BaseAPIView):
+    @allow_permission([ROLE.ADMIN])
+    def post(self, request):
+        dentist_id = request.data["dentist_id"]
+        dentist = get_object_or_404(Dentist, pk=dentist_id)
+
+        user = dentist.user
+
+        user.set_password('1234')
+        user.save()
+
+        return Response(status=status.HTTP_200_OK)
