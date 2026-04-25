@@ -19,7 +19,7 @@ class Appointment(BaseModel):
         'db.Patient', on_delete=models.CASCADE
     )
     dentist = models.ForeignKey(
-        'db.Dentist', on_delete=models.CASCADE
+        'db.Dentist', on_delete=models.CASCADE, null=True
     )
     appointment_date = models.DateTimeField()
     duration = models.IntegerField(default=30)  # in minutes

@@ -8,6 +8,7 @@ from .settings import urlpatterns as settings_urls
 from .shift import urlpatterns as shift_urls
 from .treatment import urlpatterns as treatment_urls
 from .user import urlpatterns as user_urls
+from .appointment import urlpatterns as appointment_urls
 
 urlpatterns = [
     *dentist_urls,
@@ -19,4 +20,5 @@ urlpatterns = [
     *roster_urls,
     *shift_urls,
     *notification_urls,
+    *appointment_urls
 ]
