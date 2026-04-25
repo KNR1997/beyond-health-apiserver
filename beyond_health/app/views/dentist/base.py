@@ -5,9 +5,11 @@ from rest_framework.response import Response
 
 from beyond_health.app.base import BaseViewSet
 from beyond_health.app.permissions.base import allow_permission, ROLE
-from beyond_health.app.serializers.dentist import DentistListSerializer, DentistSerializer
+from beyond_health.app.serializers.dentist import DentistListSerializer, DentistCreateSerializer, \
+    DentistUpdateSerializer
 from beyond_health.app.views.base import BaseAPIView
 from beyond_health.db.models import Dentist
+from beyond_health.db.models.notification import Notification, UserNotification
 
 
 # Create your views here.
@@ -31,10 +33,22 @@ class DentistViewSet(BaseViewSet):
 
     @allow_permission([ROLE.ADMIN])
     def create(self, request, *args, **kwargs):
-        serializer = DentistSerializer(data=request.data)
+        serializer = DentistCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         dentist = serializer.save()
+
+        notification = Notification.objects.create(
+            title="Welcome Dentist",
+            message=f"You have been added as a {dentist.user.first_name}. Please check your schedule.",
+            type="GENERAL",
+            priority="low",
+        )
+        # Create user notification for the dentist user
+        UserNotification.objects.create(
+            notification=notification,
+            user=dentist.user
+        )
 
         output = DentistListSerializer(dentist, context={"request": request}).data
         return Response(output, status=status.HTTP_201_CREATED)
@@ -42,7 +56,7 @@ class DentistViewSet(BaseViewSet):
     @allow_permission([ROLE.ADMIN])
     def update(self, request, *args, **kwargs):
         dentist = Dentist.objects.get(pk=kwargs["pk"])
-        serializer = DentistSerializer(
+        serializer = DentistUpdateSerializer(
             dentist,
             data=request.data,
             partial=True,
