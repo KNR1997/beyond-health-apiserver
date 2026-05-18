@@ -32,5 +32,6 @@ class AppointmentUpdateSerializer(BaseSerializer):
             'appointment_date',
             'appointment_type',
             'reason_for_visit',
-            'notes'
+            'status',
+            'notes',
         ]
