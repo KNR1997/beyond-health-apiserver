@@ -6,3 +6,5 @@ from .treatment import Treatment, TreatmentPlan, TreatmentPlanItem
 from .user import User
 from .shift import Shift
 from .roster import RosterWeek
+from .appointment import Appointment
+# from .notification import Notification, UserNotification

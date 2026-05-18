@@ -1,5 +1,6 @@
 from .dental_problem import urlpatterns as dental_problem_urls
 from .dentist import urlpatterns as dentist_urls
+from .notification import urlpatterns as notification_urls
 from .patient import urlpatterns as patient_urls
 from .roster import urlpatterns as roster_urls
 from .settings import urlpatterns as settings_urls
@@ -7,6 +8,7 @@ from .settings import urlpatterns as settings_urls
 from .shift import urlpatterns as shift_urls
 from .treatment import urlpatterns as treatment_urls
 from .user import urlpatterns as user_urls
+from .appointment import urlpatterns as appointment_urls
 
 urlpatterns = [
     *dentist_urls,
@@ -17,4 +19,6 @@ urlpatterns = [
     *treatment_urls,
     *roster_urls,
     *shift_urls,
+    *notification_urls,
+    *appointment_urls
 ]

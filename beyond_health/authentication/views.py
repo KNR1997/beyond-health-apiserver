@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+from django.contrib.auth.hashers import make_password
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -11,6 +12,7 @@ from beyond_health.app.permissions.permissions import IsAdminOrReadOnly
 from .serializers import SignupSerializer, SigninSerializer, ChangePasswordSerializer
 from beyond_health.app.views.base import BaseAPIView
 from ..app.serializers.user import UserLiteSerializer
+from ..db.models import User
 
 
 # Create your views here.
@@ -112,3 +114,21 @@ class ChangePasswordEndpoint(BaseAPIView):
         user.save()
 
         return Response(status=status.HTTP_200_OK)
+
+
+class InitializeAdminView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        User.objects.create(
+            username='John_Doe',
+            email='admin@demo.com',
+            role=ROLE.ADMIN.value,
+            mobile_number='0113123888',
+            password=make_password('demodemo')
+        )
+
+        return Response(
+            {"detail": "Admin initialized successfully"},
+            status=status.HTTP_201_CREATED
+        )
