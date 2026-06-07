@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     # Third-party things
     'rest_framework',
     'corsheaders',
+    'drf_spectacular',
 ]
 
 REST_FRAMEWORK = {
@@ -65,6 +66,13 @@ REST_FRAMEWORK = {
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'DEFAULT_PAGINATION_CLASS': 'beyond_health.utils.pagination.LaravelLikePagination',
     'PAGE_SIZE': 10,  # or whatever default you prefer
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'beyondhealth-apiserver',
+    'DESCRIPTION': 'API documentation',
+    'VERSION': '1.0.0',
 }
 
 MIDDLEWARE = [

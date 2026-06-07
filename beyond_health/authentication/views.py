@@ -1,18 +1,23 @@
-from django.contrib.auth import authenticate
-from django.contrib.auth.hashers import make_password
+# Third party imports
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
 
+# Django imports
+from django.contrib.auth import authenticate
+from django.contrib.auth.hashers import make_password
+
+# Module imports
 from beyond_health.app.permissions.base import ROLE
 from beyond_health.app.permissions.permissions import IsAdminOrReadOnly
-from .serializers import SignupSerializer, SigninSerializer, ChangePasswordSerializer
+from beyond_health.authentication.serializers import SignupSerializer, SigninSerializer, ChangePasswordSerializer
 from beyond_health.app.views.base import BaseAPIView
-from ..app.serializers.user import UserLiteSerializer
-from ..db.models import User
+from beyond_health.app.serializers.user import UserLiteSerializer
+from beyond_health.db.models import User
 
 
 # Create your views here.
@@ -119,6 +124,19 @@ class ChangePasswordEndpoint(BaseAPIView):
 class InitializeAdminView(APIView):
     permission_classes = []
 
+    @extend_schema(
+        operation_id="create_subject",
+        summary="Initialize Admin",
+        description="Initialize admin user",
+        tags=["Initialize-Admin"],
+        responses={
+            201: OpenApiResponse(
+                description="Admin initialized successfully",
+                response=None
+            ),
+            400: OpenApiResponse(description="Validation error"),
+        },
+    )
     def post(self, request):
         User.objects.create(
             username='John_Doe',
