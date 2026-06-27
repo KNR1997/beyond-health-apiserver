@@ -18,6 +18,7 @@ class DentistViewSet(BaseViewSet):
     serializer_class = DentistListSerializer
 
     search_fields = ['user__first_name', 'user__last_name']
+    ordering_fields = ['user__first_name','specialization','license_number']
     filterset_fields = []
 
     def get_queryset(self):
