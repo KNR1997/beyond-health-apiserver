@@ -13,6 +13,7 @@ class PatientViewSet(BaseViewSet):
     serializer_class = PatientListSerializer
 
     search_fields = ["name"]
+    ordering_fields = ['name','gender']
     filterset_fields = []
 
     def get_queryset(self):
