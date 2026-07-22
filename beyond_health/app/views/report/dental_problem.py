@@ -7,21 +7,21 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from weasyprint import HTML
 
-from beyond_health.db.models import Dentist
+from beyond_health.db.models import DentalProblem, PatientDentalProblem
 
 
-class DentistPdfView(APIView):
+class DentalProblemPdfView(APIView):
 
     def get(self, request):
         try:
             # Use select_related for ForeignKey/OneToOne relationships
-            dentists = Dentist.objects.all()
+            dental_problems = DentalProblem.objects.all()
             # pdf = InvoicePdfService.generate(invoice)
 
             html = render_to_string(
-                "dentist.html",
+                "dental-problems.html",
                 {
-                    "dentists": dentists
+                    "dental_problems": dental_problems
                 }
             )
 
@@ -42,7 +42,7 @@ class DentistPdfView(APIView):
 
             response[
                 "Content-Disposition"
-            ] = f'attachment; filename="dentist.pdf"'
+            ] = f'attachment; filename="dental_problem.pdf"'
 
             return response
 
