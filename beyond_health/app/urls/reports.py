@@ -1,9 +1,11 @@
 from django.urls import path
 
+from beyond_health.app.views.report.appointment import AppointmentPdfView
 from beyond_health.app.views.report.dental_problem import DentalProblemPdfView
 from beyond_health.app.views.report.dentist import DentistPdfView
 from beyond_health.app.views.report.patient_registration import PatientRegistrationPdfView
 from beyond_health.app.views.report.treatments import TreatmentPdfView
+from beyond_health.db.models import Appointment
 
 urlpatterns = [
     path(
@@ -28,6 +30,12 @@ urlpatterns = [
         "reports/dental-problem/",
         DentalProblemPdfView.as_view(),
         name="dental-problem",
+    ),
+
+    path(
+        "reports/appointment/",
+        AppointmentPdfView.as_view(),
+        name="appointment",
     ),
 
 

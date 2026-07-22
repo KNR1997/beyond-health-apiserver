@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Appointment Report</title>
+
+    <style>
+
+        @page {
+            size: A4;
+            margin: 25mm 18mm;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            color: #333;
+            font-size: 12px;
+        }
+
+        h1,h2,h3,h4,p{
+            margin:0;
+            padding:0;
+        }
+
+        .header{
+            border-bottom:3px solid #1976d2;
+            padding-bottom:12px;
+            margin-bottom:20px;
+        }
+
+        .clinic-name{
+            font-size:28px;
+            font-weight:bold;
+            color:#1976d2;
+        }
+
+        .clinic-address{
+            color:#666;
+            font-size:11px;
+            margin-top:3px;
+        }
+
+        .report-title{
+            margin-top:18px;
+            text-align:center;
+            font-size:22px;
+            font-weight:bold;
+            color:#222;
+        }
+
+        .report-info{
+            margin-top:18px;
+            width:100%;
+        }
+
+        .report-info td{
+            padding:4px 0;
+        }
+
+        .label{
+            font-weight:bold;
+            width:170px;
+        }
+
+        table.patient-table{
+            width:100%;
+            border-collapse:collapse;
+            margin-top:20px;
+        }
+
+        .patient-table th{
+            background:#1976d2;
+            color:white;
+            padding:10px;
+            border:1px solid #dcdcdc;
+            text-align:left;
+            font-size:12px;
+        }
+
+        .patient-table td{
+            padding:8px;
+            border:1px solid #dcdcdc;
+            font-size:11px;
+        }
+
+        .patient-table tbody tr:nth-child(even){
+            background:#f6f8fa;
+        }
+
+        .patient-table tbody tr:hover{
+            background:#eceff1;
+        }
+
+        .text-center{
+            text-align:center;
+        }
+
+        .footer{
+            position:fixed;
+            bottom:-10mm;
+            left:0;
+            right:0;
+            border-top:1px solid #bbb;
+            padding-top:5px;
+            font-size:10px;
+            color:#666;
+        }
+
+        .page-number:before{
+            content:"Page " counter(page) " of " counter(pages);
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="header">
+
+    <div class="clinic-name">
+        Beyond Health Dental Clinic
+    </div>
+
+    <div class="clinic-address">
+        Colombo, Sri Lanka <br>
+        Phone : +94 11 277 5551
+    </div>
+
+</div>
+
+<div class="report-title">
+    Appointment Report
+</div>
+
+<table class="report-info">
+
+    <tr>
+        <td class="label">Generated Date</td>
+        <td>:
+            {% now "d M Y H:i" %}
+        </td>
+    </tr>
+
+    <tr>
+        <td class="label">Total Registered Appointments</td>
+        <td>:
+            {{ appointments|length }}
+        </td>
+    </tr>
+
+</table>
+
+
+<table class="patient-table">
+
+    <thead>
+
+    <tr>
+
+
+        <th width="24%">Patient Name</th>
+        <th width="10%">Dentist Name</th>
+        <th width="8%">Appointment Date</th>
+        <th width="18%">Status</th>
+        <th width="18%">Registration Date</th>
+
+    </tr>
+
+    </thead>
+
+    <tbody>
+
+    {% for appointment in appointments %}
+
+        <tr>
+
+
+
+            <td>{{ appointment.patient.name }}</td>
+
+             <td>{{ appointment.dentist.name }}</td>
+
+            <td class="text-center">
+                {{ appointment.appointment_date }}
+            </td>
+
+            <td class="text-center">
+                {{ appointment.status }}
+            </td>
+
+            <td>
+
+                {{ appointment.created_at|date:"d M Y" }}
+
+            </td>
+
+        </tr>
+
+    {% empty %}
+
+        <tr>
+
+            <td colspan="6" class="text-center">
+                No Appointments Found
+            </td>
+
+        </tr>
+
+    {% endfor %}
+
+    </tbody>
+
+</table>
+
+<div class="footer">
+
+    <table width="100%">
+
+        <tr>
+
+            <td>
+                Beyond Health Dental Management System
+            </td>
+
+            <td style="text-align:right;">
+                <span class="page-number"></span>
+            </td>
+
+        </tr>
+
+    </table>
+
+</div>
+
+</body>
+</html>
