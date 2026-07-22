@@ -11,12 +11,14 @@ class AppointmentViewSet(BaseViewSet):
     model = Appointment
     serializer_class = AppointmentListSerializer
 
-    search_fields = []
-    filterset_fields = []
+    search_fields = ['patient__name']
+    filterset_fields = ['patient', 'dentist', 'status']
+    ordering_fields = ['created_at']
 
     def get_queryset(self):
         return (
-            self.filter_queryset(super().get_queryset())
+            self.filter_queryset(
+                super().get_queryset().select_related('patient', 'dentist'))
         )
 
     def list(self, request, *args, **kwargs):
@@ -32,7 +34,8 @@ class AppointmentViewSet(BaseViewSet):
 
         appointment = serializer.save()
 
-        output = AppointmentListSerializer(appointment, context={"request": request}).data
+        output = AppointmentListSerializer(
+            appointment, context={"request": request}).data
         return Response(output, status=status.HTTP_201_CREATED)
 
     # @allow_permission([])
@@ -47,5 +50,11 @@ class AppointmentViewSet(BaseViewSet):
         serializer.is_valid(raise_exception=True)
         appointment = serializer.save()
 
-        output = AppointmentListSerializer(appointment, context={"request": request}).data
+        output = AppointmentListSerializer(
+            appointment, context={"request": request}).data
         return Response(output, status=status.HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
+        appointment = Appointment.objects.get(pk=kwargs["pk"])
+        appointment.delete(soft=False)
+        return Response(status=status.HTTP_204_NO_CONTENT)
