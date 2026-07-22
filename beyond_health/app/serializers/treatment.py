@@ -78,7 +78,7 @@ class TreatmentPlanItemCustomSerializer(serializers.Serializer):
     treatment_id = serializers.UUIDField()
     tooth_number = serializers.CharField()
     cost = serializers.FloatField()
-    notes = serializers.CharField()
+    notes = serializers.CharField(allow_null=True, allow_blank=True)
 
 
 class TreatmentPlanItemsCreateSerializer(serializers.Serializer):
