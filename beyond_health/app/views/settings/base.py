@@ -66,7 +66,7 @@ class SettingsViewSet(BaseAPIView):
                     "file_name": "Pickbazar.png"
                 },
                 "useOtp": False,
-                "currency": "USD",
+                "currency": "LKR",
                 "taxClass": "1",
                 "siteTitle": "Beyond-Health",
                 "freeShipping": False,
