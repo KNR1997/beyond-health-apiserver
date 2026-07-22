@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dentist Report</title>
+    <title>Dental Problem Report</title>
 
     <style>
 
@@ -62,13 +62,13 @@
             width:170px;
         }
 
-        table.dentist-table{
+        table.dental-problem-table{
             width:100%;
             border-collapse:collapse;
             margin-top:20px;
         }
 
-        .dentist-table th{
+        .dental-problem-table th{
             background:#1976d2;
             color:white;
             padding:10px;
@@ -77,17 +77,17 @@
             font-size:12px;
         }
 
-        .dentist-table td{
+        .dental-problem-table td{
             padding:8px;
             border:1px solid #dcdcdc;
             font-size:11px;
         }
 
-        .dentist-table tbody tr:nth-child(even){
+        .dental-problem-table tbody tr:nth-child(even){
             background:#f6f8fa;
         }
 
-        .dentist-table tbody tr:hover{
+        .dental-problem-table tbody tr:hover{
             background:#eceff1;
         }
 
@@ -130,7 +130,7 @@
 </div>
 
 <div class="report-title">
-    Dentist Report
+    Dental Problem Report
 </div>
 
 <table class="report-info">
@@ -138,25 +138,25 @@
 
 
     <tr>
-        <td class="label">Total Registered Dentists</td>
+        <td class="label">Total Registered Dental Problems</td>
         <td>:
-            {{ dentists|length }}
+            {{ dental_problems|length }}
         </td>
     </tr>
 
 </table>
 
 
-<table class="dentist-table">
+<table class="dental-problem-table">
 
     <thead>
 
     <tr>
 
 
-        <th width="24%">Dentist Name</th>
-        <th width="10%">Specialization</th>
-        <th width="18%">Licence Number</th>
+        <th width="24%">Name</th>
+        <th width="10%">Description</th>
+        <th width="18%">Status</th>
         <th width="18%">Registration Date</th>
 
     </tr>
@@ -165,26 +165,26 @@
 
     <tbody>
 
-    {% for dentist in dentists %}
+    {% for dental_problem in dental_problems %}
 
         <tr>
 
 
 
-            <td>{{ dentist.name }}</td>
+            <td>{{ dental_problem.name }}</td>
 
-            <td class="text-center">
-                {{ dentist.specialization }}
+            <td>
+                {{ dental_problem.description|safe }}
             </td>
 
 
             <td class="text-center">
-                {{ dentist.license_number }}
+                {{ dental_problem.is_active }}
             </td>
 
             <td>
 
-                {{ dentist.created_at|date:"d M Y" }}
+                {{ dental_problem.created_at|date:"d M Y" }}
 
             </td>
 
@@ -195,7 +195,7 @@
         <tr>
 
             <td colspan="6" class="text-center">
-                No Dentists Found
+                No Dental Problems Found
             </td>
 
         </tr>
