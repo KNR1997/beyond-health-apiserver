@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
-
+from rest_framework import status
+from rest_framework.response import Response
 from beyond_health.app.base import BaseViewSet
 from beyond_health.app.serializers.roster import RosterWeekListSerializer
 from beyond_health.db.models.notification import Notification, UserNotification
@@ -13,6 +14,7 @@ class RosterWeekViewSet(BaseViewSet):
 
     search_fields = []
     filterset_fields = []
+    ordering_fields = ['created_at']
 
     def get_queryset(self):
         return (
@@ -54,4 +56,6 @@ class RosterWeekViewSet(BaseViewSet):
         return super().partial_update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
+        roster_week = RosterWeek.objects.get(pk=kwargs["pk"])
+        roster_week.delete(soft=False)
+        return Response(status=status.HTTP_204_NO_CONTENT)

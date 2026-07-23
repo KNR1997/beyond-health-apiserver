@@ -10,6 +10,7 @@ class ShiftViewSet(BaseViewSet):
 
     search_fields = []
     filterset_fields = []
+    ordering_fields = ['created_at']
 
     def get_queryset(self):
         return (
