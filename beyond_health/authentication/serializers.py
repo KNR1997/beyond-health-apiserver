@@ -69,3 +69,7 @@ class ChangePasswordSerializer(serializers.Serializer):
         from django.contrib.auth.password_validation import validate_password
         validate_password(value)  # uses Django validators
         return value
+
+
+class ChangeEmailSerializer(serializers.Serializer):
+    email = serializers.EmailField(write_only=True)
