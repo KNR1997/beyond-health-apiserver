@@ -159,7 +159,8 @@
     <tr>
 
 
-        <th width="24%">Patient Name</th>
+        <th width="24%">Appointment No</th>
+        <th width="10%">Patient Name</th>
         <th width="10%">Dentist Name</th>
         <th width="8%">Appointment Date</th>
         <th width="18%">Status</th>
@@ -175,11 +176,11 @@
 
         <tr>
 
-
+             <td>{{ appointment.appointment_no}}</td>
 
             <td>{{ appointment.patient.name }}</td>
 
-             <td>{{ appointment.dentist.name }}</td>
+            <td>{{ appointment.dentist.user.first_name }} {{ appointment.dentist.user.last_name }}</td>
 
             <td class="text-center">
                 {{ appointment.appointment_date }}
