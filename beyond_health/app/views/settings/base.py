@@ -131,8 +131,8 @@ class SettingsViewSet(BaseAPIView):
                 "defaultAi": "openai",
                 "maxShopDistance": None,
                 "siteLink": "https://pickbazar.redq.io",
-                "copyrightText": "Copyright \u00a9 REDQ. All rights reserved worldwide.",
-                "externalText": "REDQ",
+                "copyrightText": "Copyright \u00a9 Beyound Health. All rights reserved worldwide.",
+                "externalText": "",
                 "externalLink": "https://redq.io",
                 "smsEvent": {
                     "admin": {

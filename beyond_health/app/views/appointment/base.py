@@ -55,6 +55,20 @@ class AppointmentViewSet(BaseViewSet):
     # @allow_permission([])
     def update(self, request, *args, **kwargs):
         appointment = Appointment.objects.get(pk=kwargs["pk"])
+
+        # Prevent any update if appointment is cancelled
+        if appointment.status == 'cancelled':
+            return Response(
+                {"error": "Cannot update a cancelled appointment"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Optionally, prevent changing status back from cancelled
+        if 'status' in request.data and request.data['status'] == 'cancelled':
+            # Allow cancellation only if not already cancelled
+            # (but this is already handled by the check above)
+            pass
+
         serializer = AppointmentUpdateSerializer(
             appointment,
             data=request.data,

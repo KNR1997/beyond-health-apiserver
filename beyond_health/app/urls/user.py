@@ -24,4 +24,14 @@ urlpatterns = [
         ResetUserPasswordEndpoint.as_view(),
         name="reset-user-password",
     ),
+    path(
+        "users/block-user",
+        UserViewSet.as_view({"post": "block_user"}),
+        name="user",
+    ),
+    path(
+        "users/unblock-user",
+        UserViewSet.as_view({"post": "unblock_user"}),
+        name="user",
+    ),
 ]

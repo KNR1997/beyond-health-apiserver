@@ -18,15 +18,15 @@ class SignupSerializer(serializers.ModelSerializer):
         required=True,
         validators=[validate_password]
     )
-    password2 = serializers.CharField(write_only=True, required=True)
+    # password2 = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
         fields = (
-            'username',
+            'display_name',
             'mobile_number',
             'password',
-            'password2',
+            # 'password2',
             'email',
             'first_name',
             'last_name'
@@ -35,18 +35,21 @@ class SignupSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         user = User.objects.create_user(
-            username=validated_data['username'],
+            username=validated_data['first_name'],
+            display_name=validated_data['display_name'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
             email=validated_data['email'],
             password=validated_data['password'],
-            role=ROLE.PATIENT.value,
+            role=ROLE.STAFF.value,
             mobile_number=validated_data['mobile_number'],
         )
-        Patient.objects.create(
-            user=user,
-            name=validated_data['first_name'],
-            email=validated_data['email'],
-            mobile_number=validated_data['mobile_number'],
-        )
+        # Patient.objects.create(
+        #     user=user,
+        #     name=validated_data['first_name'],
+        #     email=validated_data['email'],
+        #     mobile_number=validated_data['mobile_number'],
+        # )
         return user
 
 

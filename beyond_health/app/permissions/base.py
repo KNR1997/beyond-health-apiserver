@@ -10,13 +10,14 @@ class ROLE(Enum):
     ADMIN = 20
     DENTIST = 15
     PATIENT = 10
+    STAFF = 8
     GUEST = 5
 
 
 ROLE_PERMISSIONS = {
     ROLE.ADMIN: ["super_admin"],
     ROLE.DENTIST: ["dentist"],
-    ROLE.PATIENT: ["patient"],
+    ROLE.STAFF: ["staff"],
     ROLE.GUEST: ["guest"],
 }
 

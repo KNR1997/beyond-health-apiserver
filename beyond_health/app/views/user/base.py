@@ -55,3 +55,25 @@ class UserViewSet(BaseViewSet):
     @allow_permission([ROLE.ADMIN])
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
+
+    @allow_permission([ROLE.ADMIN])
+    def block_user(self, request, *args, **kwargs):
+        block_user_id = request.data['id']
+        user = User.objects.get(id=block_user_id)
+
+        # Block the user
+        user.is_active = False
+        user.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @allow_permission([ROLE.ADMIN])
+    def unblock_user(self, request, *args, **kwargs):
+        unblock_user_id = request.data['id']
+        user = User.objects.get(id=unblock_user_id)
+
+        # Unblock the user
+        user.is_active = True
+        user.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
