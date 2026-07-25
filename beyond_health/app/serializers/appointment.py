@@ -32,6 +32,7 @@ class AppointmentCreateSerializer(BaseSerializer):
             'dentist',
             'appointment_date',
             'appointment_type',
+            'status',
         ]
 
 
