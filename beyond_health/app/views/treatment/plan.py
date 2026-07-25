@@ -12,8 +12,9 @@ class TreatmentPlanViewSet(BaseViewSet):
     model = TreatmentPlan
     serializer_class = TreatmentPlanListSerializer
 
-    search_fields = ["patient__name"]
+    search_fields = ['patient__name']
     filterset_fields = ['patient','dentist', 'status']
+    ordering_fields = ['created_at']
 
     def get_queryset(self):
         return (

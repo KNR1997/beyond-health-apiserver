@@ -47,6 +47,9 @@ class RosterAssignment(models.Model):
         """
         Business rule validation
         """
+        print("self.assigned_role", self.assigned_role)
+        print("self.user.role", self.user.role)
+
         if self.assigned_role != self.user.role:
             raise ValidationError("Assigned role does not match user role")
 

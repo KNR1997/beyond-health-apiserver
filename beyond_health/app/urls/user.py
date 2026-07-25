@@ -2,6 +2,7 @@ from django.urls import path
 
 from beyond_health.app.views.user.base import UserViewSet
 from beyond_health.app.views.user.admin import ResetUserPasswordEndpoint
+from beyond_health.app.views.user.staff import StaffViewSet
 
 urlpatterns = [
     path(
@@ -33,5 +34,10 @@ urlpatterns = [
         "users/unblock-user",
         UserViewSet.as_view({"post": "unblock_user"}),
         name="user",
+    ),
+    path(
+        "staffs/",
+        StaffViewSet.as_view({"get": "list"}),
+        name="staff",
     ),
 ]
