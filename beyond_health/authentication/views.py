@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from rest_framework.views import APIView
+from rest_framework import status, serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
 
@@ -14,10 +15,11 @@ from django.contrib.auth.hashers import make_password
 # Module imports
 from beyond_health.app.permissions.base import ROLE
 from beyond_health.app.permissions.permissions import IsAdminOrReadOnly
-from beyond_health.authentication.serializers import SignupSerializer, SigninSerializer, ChangePasswordSerializer
+from beyond_health.authentication.serializers import SignupSerializer, SigninSerializer, ChangePasswordSerializer, ChangeEmailSerializer
 from beyond_health.app.views.base import BaseAPIView
 from beyond_health.app.serializers.user import UserLiteSerializer
 from beyond_health.db.models import User
+from beyond_health.app.permissions.base import allow_permission, ROLE
 
 
 # Create your views here.
@@ -104,6 +106,31 @@ class LogoutView(APIView):
         return Response(status=HTTP_200_OK)
 
 
+class ChangeEmailEndpoint(BaseAPIView):
+    @allow_permission([ROLE.ADMIN, ROLE.DENTIST])
+    def post(self, request):
+
+        serializer = ChangeEmailSerializer(
+            data=request.data,
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+
+        user = request.user
+        new_email = serializer.validated_data['email']
+
+        if user.email != new_email:
+            if User.objects.filter(email=new_email).exists():
+                raise serializers.ValidationError({
+                    "email": "A user with this email already exists."
+                })
+
+        user.email = new_email
+        user.save()
+
+        return Response(status=status.HTTP_200_OK)
+
+    
 class ChangePasswordEndpoint(BaseAPIView):
     def post(self, request):
         serializer = ChangePasswordSerializer(

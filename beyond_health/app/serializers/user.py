@@ -10,6 +10,8 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'display_name',
+            'first_name',
+            'last_name',
             'mobile_number',
         ]
 

@@ -2,10 +2,7 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from django.db import transaction
-
-from beyond_health.app.permissions.base import ROLE
-from beyond_health.db.models import User, Patient
+from beyond_health.db.models import User
 
 
 class SignupSerializer(serializers.ModelSerializer):
@@ -22,30 +19,12 @@ class SignupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = (
-            'username',
-            'mobile_number',
-            'password',
-            'password2',
-            'email',
-            'first_name',
-            'last_name'
-        )
+        fields = ('username', 'password', 'password2', 'email', 'first_name', 'last_name')
 
-    @transaction.atomic
     def create(self, validated_data):
         user = User.objects.create_user(
-            username=validated_data['username'],
             email=validated_data['email'],
-            password=validated_data['password'],
-            role=ROLE.PATIENT.value,
-            mobile_number=validated_data['mobile_number'],
-        )
-        Patient.objects.create(
-            user=user,
-            name=validated_data['first_name'],
-            email=validated_data['email'],
-            mobile_number=validated_data['mobile_number'],
+            password=validated_data['password']
         )
         return user
 
@@ -73,3 +52,6 @@ class ChangePasswordSerializer(serializers.Serializer):
 
 class ChangeEmailSerializer(serializers.Serializer):
     email = serializers.EmailField(write_only=True)
+
+class ResetUserPasswordSerializer(serializers.Serializer):
+    password = serializers.CharField(write_only=True)

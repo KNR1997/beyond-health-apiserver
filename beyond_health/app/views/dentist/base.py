@@ -2,11 +2,13 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 from beyond_health.app.base import BaseViewSet
 from beyond_health.app.permissions.base import allow_permission, ROLE
 from beyond_health.app.serializers.dentist import DentistListSerializer, DentistCreateSerializer, \
-    DentistUpdateSerializer
+    DentistUpdateSerializer, DentistMeDetailsSerializer
 from beyond_health.app.views.base import BaseAPIView
 from beyond_health.db.models import Dentist
 from beyond_health.db.models.notification import Notification, UserNotification
@@ -90,3 +92,15 @@ class DentistRestPasswordEndpoint(BaseAPIView):
         user.save()
 
         return Response(status=status.HTTP_200_OK)
+
+
+class DentistMeDetailsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @allow_permission([ROLE.DENTIST])
+    def get(self, request):
+        user = self.request.user
+        dentist = Dentist.objects.get(user=user)
+
+        serializer = DentistMeDetailsSerializer(dentist)
+        return Response(serializer.data)
