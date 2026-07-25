@@ -1,6 +1,7 @@
 from django.urls import path
 
 from beyond_health.app.views.patient.base import PatientViewSet
+from beyond_health.app.views.patient.treatment_plan import PatientTreatmentPlanViewSet
 from beyond_health.app.views.patient.dental_problem import PatientDentalProblemViewSet
 
 urlpatterns = [
@@ -30,5 +31,11 @@ urlpatterns = [
         "patients/<uuid:pk>/dental-problems/",
         PatientDentalProblemViewSet.as_view({"get": "retrieve", "put": "update"}),
         name="patient-dental-problem",
-    )
+    ),
+
+    path(
+        "patients/<uuid:pk>/treatment-plans",
+        PatientTreatmentPlanViewSet.as_view({"get": "list"}),
+        name="patient-treatment-plans",
+    ),
 ]

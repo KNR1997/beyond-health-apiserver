@@ -12,9 +12,9 @@ class UserViewSet(BaseViewSet):
     model = User
     serializer_class = UserListSerializer
 
-    search_fields = ['first_name', 'last_name']
-    ordering_fields = ['first_name', 'role']
-    filterset_fields= []
+    search_fields = ["username", "email"]
+    filterset_fields = ['role']
+    ordering_fields = ['first_name', 'is_active', '-created_at']
 
     def get_queryset(self):
         return (

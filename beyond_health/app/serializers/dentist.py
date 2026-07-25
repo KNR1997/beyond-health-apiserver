@@ -129,3 +129,13 @@ class DentistUpdateSerializer(BaseSerializer):
         # --- UPDATE DENTIST ---
         dentist = super().update(instance, validated_data)
         return dentist
+
+
+class DentistMeDetailsSerializer(BaseSerializer):
+    class Meta:
+        model = Dentist
+        fields = [
+            'id',
+            'specialization',
+            'license_number',
+        ]
