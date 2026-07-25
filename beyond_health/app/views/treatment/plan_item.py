@@ -16,7 +16,8 @@ class TreatmentPlanItemViewSet(BaseViewSet):
 
     def get_queryset(self):
         return (
-            self.filter_queryset(super().get_queryset())
+            self.filter_queryset(
+                super().get_queryset().select_related())
         )
 
     def list(self, request, *args, **kwargs):

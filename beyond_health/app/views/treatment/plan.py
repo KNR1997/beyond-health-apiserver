@@ -13,15 +13,19 @@ class TreatmentPlanViewSet(BaseViewSet):
     serializer_class = TreatmentPlanListSerializer
 
     search_fields = ["patient__name"]
-    filterset_fields = []
+    filterset_fields = ['patient','dentist']
 
     def get_queryset(self):
         return (
-            self.filter_queryset(super().get_queryset())
+            self.filter_queryset(
+                super().get_queryset().select_related('patient'))
         )
 
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         try:

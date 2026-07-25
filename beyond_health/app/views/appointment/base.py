@@ -2,8 +2,10 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from beyond_health.app.base import BaseViewSet
+from beyond_health.app.serializers import dentist
 from beyond_health.app.serializers.appointment import AppointmentListSerializer, AppointmentCreateSerializer, \
     AppointmentUpdateSerializer
+from beyond_health.db.models import Notification, UserNotification
 from beyond_health.db.models.appointment import Appointment
 
 
@@ -33,6 +35,18 @@ class AppointmentViewSet(BaseViewSet):
         serializer.is_valid(raise_exception=True)
 
         appointment = serializer.save()
+
+        notification = Notification.objects.create(
+            title="New Appointment Scheduled",
+            message=f"Your Appointment with {appointment.dentist.user.first_name}. has been scheduled for {appointment.appointment_date:%d %b %Y} at {appointment.duration}..",
+            type="GENERAL",
+            priority="medium",
+        )
+        # Create user notification for the patient user
+        UserNotification.objects.create(
+            notification=notification,
+            user=appointment.dentist.user
+        )
 
         output = AppointmentListSerializer(
             appointment, context={"request": request}).data

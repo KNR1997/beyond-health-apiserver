@@ -24,8 +24,16 @@ class TreatmentViewSet(BaseViewSet):
 
     def get_queryset(self):
         return (
-            self.filter_queryset(super().get_queryset())
+            self.filter_queryset(
+            super().get_queryset().select_related())
         )
+
+
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
 
     @extend_schema(
         operation_id="create_treatment",
