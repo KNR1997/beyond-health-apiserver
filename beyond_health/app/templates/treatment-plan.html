@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dentist Report</title>
+    <title>Treatment Plan Report</title>
 
     <style>
 
@@ -62,13 +62,13 @@
             width:170px;
         }
 
-        table.dentist-table{
+        table.patient-table{
             width:100%;
             border-collapse:collapse;
             margin-top:20px;
         }
 
-        .dentist-table th{
+        .patient-table th{
             background:#1976d2;
             color:white;
             padding:10px;
@@ -77,17 +77,17 @@
             font-size:12px;
         }
 
-        .dentist-table td{
+        .patient-table td{
             padding:8px;
             border:1px solid #dcdcdc;
             font-size:11px;
         }
 
-        .dentist-table tbody tr:nth-child(even){
+        .patient-table tbody tr:nth-child(even){
             background:#f6f8fa;
         }
 
-        .dentist-table tbody tr:hover{
+        .patient-table tbody tr:hover{
             background:#eceff1;
         }
 
@@ -130,33 +130,39 @@
 </div>
 
 <div class="report-title">
-    Dentist Report
+    Treatment Plan Report
 </div>
 
 <table class="report-info">
 
-
+    <tr>
+        <td class="label">Generated Date</td>
+        <td>:
+            {% now "d M Y H:i" %}
+        </td>
+    </tr>
 
     <tr>
-        <td class="label">Total Registered Dentists</td>
+        <td class="label">Total Registered Treatment Plans</td>
         <td>:
-            {{ dentists|length }}
+            {{ treatment_plans|length }}
         </td>
     </tr>
 
 </table>
 
 
-<table class="dentist-table">
+<table class="patient-table">
 
     <thead>
 
     <tr>
 
 
-        <th width="24%">Dentist Name</th>
-        <th width="10%">Specialization</th>
-        <th width="18%">Licence Number</th>
+        <th width="24%">Name</th>
+        <th width="10%">Description</th>
+        <th width="8%">Total Cost</th>
+        <th width="18%">Status</th>
         <th width="18%">Registration Date</th>
 
     </tr>
@@ -165,26 +171,27 @@
 
     <tbody>
 
-    {% for dentist in dentists %}
+    {% for treatment_plan in treatment_plans %}
 
         <tr>
 
 
 
-            <td>{{ dentist.user.first_name }}</td>
+            <td>{{ treatment_plan.patient.name }}</td>
 
             <td class="text-center">
-                {{ dentist.specialization }}
+                {{ treatment_plan.description}}
             </td>
-
 
             <td class="text-center">
-                {{ dentist.license_number }}
+                {{ treatment_plan.total_cost}}
             </td>
+
+            <td>{{ treatment_plan.status }}</td>
 
             <td>
 
-                {{ dentist.created_at|date:"d M Y" }}
+                {{ treatment_plan.created_at|date:"d M Y" }}
 
             </td>
 
@@ -195,7 +202,7 @@
         <tr>
 
             <td colspan="6" class="text-center">
-                No Dentists Found
+                No Treatment Plans Found
             </td>
 
         </tr>
