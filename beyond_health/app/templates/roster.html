@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Roster Report - {{ roster_week.start_date|date:"d M Y" }} to {{ roster_week.end_date|date:"d M Y" }}</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 20mm 15mm;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            color: #333;
+            font-size: 11px;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1, h2, h3, h4, p {
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            border-bottom: 3px solid #1976d2;
+            padding-bottom: 12px;
+            margin-bottom: 18px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .clinic-info {
+            flex: 1;
+        }
+
+        .clinic-name {
+            font-size: 26px;
+            font-weight: bold;
+            color: #1976d2;
+        }
+
+        .clinic-address {
+            color: #666;
+            font-size: 10px;
+            margin-top: 3px;
+        }
+
+        .report-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #222;
+            text-align: center;
+            flex: 1;
+        }
+
+        .report-meta {
+            text-align: right;
+            font-size: 10px;
+            color: #666;
+        }
+
+        .week-info {
+            background: #f0f5ff;
+            border: 1px solid #d0e0ff;
+            border-radius: 6px;
+            padding: 12px 15px;
+            margin: 15px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .week-range {
+            font-size: 14px;
+            font-weight: bold;
+            color: #1976d2;
+        }
+
+        .week-range .date {
+            font-weight: normal;
+            color: #333;
+        }
+
+        .week-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1976d2;
+        }
+
+        .stat-label {
+            font-size: 9px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .legend {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+        }
+
+        .legend-title {
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .legend-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 10px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 12px;
+            border-radius: 2px;
+            border: 1px solid #ddd;
+        }
+
+        .legend-color-dentist {
+            background: #e3f2fd;
+        }
+
+        .legend-color-staff {
+            background: #f3e5f5;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 9px;
+        }
+
+        .schedule-table th {
+            background: #1976d2;
+            color: white;
+            padding: 6px 4px;
+            border: 1px solid #dcdcdc;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .schedule-table td {
+            padding: 5px 3px;
+            border: 1px solid #dcdcdc;
+            text-align: center;
+            vertical-align: middle;
+            min-height: 30px;
+        }
+
+        .schedule-table .day-header {
+            background: #e8f0fe;
+            font-weight: bold;
+            font-size: 10px;
+        }
+
+        .schedule-table .shift-cell {
+            background: #f8f9fa;
+            font-weight: bold;
+            font-size: 9px;
+            color: #555;
+        }
+
+        .assignment-dentist {
+            background: #e3f2fd;
+            color: #0d47a1;
+            padding: 2px 5px;
+            border-radius: 3px;
+            display: inline-block;
+            margin: 1px 0;
+            font-size: 8px;
+            white-space: nowrap;
+        }
+
+        .assignment-staff {
+            background: #f3e5f5;
+            color: #4a148c;
+            padding: 2px 5px;
+            border-radius: 3px;
+            display: inline-block;
+            margin: 1px 0;
+            font-size: 8px;
+            white-space: nowrap;
+        }
+
+        .assignment-admin {
+            background: #ffebee;
+            color: #b71c1c;
+            padding: 2px 5px;
+            border-radius: 3px;
+            display: inline-block;
+            margin: 1px 0;
+            font-size: 8px;
+            white-space: nowrap;
+        }
+
+        .assignment-guest {
+            background: #f5f5f5;
+            color: #616161;
+            padding: 2px 5px;
+            border-radius: 3px;
+            display: inline-block;
+            margin: 1px 0;
+            font-size: 8px;
+            white-space: nowrap;
+        }
+
+        .assignment-empty {
+            color: #ccc;
+            font-size: 9px;
+        }
+
+        .assignment-multiple {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            align-items: center;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-size: 7px;
+            font-weight: bold;
+            margin-left: 2px;
+        }
+
+        .role-badge-dentist {
+            background: #1976d2;
+            color: white;
+        }
+
+        .role-badge-staff {
+            background: #7b1fa2;
+            color: white;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: -15mm;
+            left: 0;
+            right: 0;
+            border-top: 1px solid #bbb;
+            padding-top: 5px;
+            font-size: 9px;
+            color: #666;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .page-number:before {
+            content: "Page " counter(page) " of " counter(pages);
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-muted {
+            color: #999;
+        }
+
+        .summary-section {
+            margin-top: 20px;
+            padding: 12px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        @media print {
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="clinic-info">
+                <div class="clinic-name">{{ clinic_name }}</div>
+                <div class="clinic-address">
+                    {{ clinic_address }}<br>
+                    Phone: {{ clinic_phone }}
+                </div>
+            </div>
+            <div class="report-title">
+                Roster Report
+            </div>
+            <div class="report-meta">
+                Generated: {{ generated_date|date:"d M Y H:i" }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Week Information -->
+    <div class="week-info">
+        <div class="week-range">
+            Roster Week
+            <span class="date">
+                {{ roster_week.start_date|date:"l, d M Y" }}
+            </span>
+            <span style="color:#999; margin:0 8px;">→</span>
+            <span class="date">
+                {{ roster_week.end_date|date:"l, d M Y" }}
+            </span>
+        </div>
+        <div class="week-stats">
+            <div class="stat-item">
+                <div class="stat-value">{{ total_assignments }}</div>
+                <div class="stat-label">Total Assignments</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ unique_days }}</div>
+                <div class="stat-label">Working Days</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ shifts|length }}</div>
+                <div class="stat-label">Shifts</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+        <div class="legend-title">Personnel Legend</div>
+        <div class="legend-items">
+            {% for dentist in dentists %}
+                <div class="legend-item">
+                    <span class="legend-color legend-color-dentist"></span>
+                    <span>D: {{ dentist.get_full_name }}</span>
+                </div>
+            {% endfor %}
+            {% for staff in staff_members %}
+                <div class="legend-item">
+                    <span class="legend-color legend-color-staff"></span>
+                    <span>S: {{ staff.get_full_name }}</span>
+                </div>
+            {% endfor %}
+            {% if not dentists and not staff_members %}
+                <div class="legend-item">
+                    <span class="text-muted">No personnel assigned</span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Main Schedule Table -->
+    <table class="schedule-table">
+        <thead>
+            <tr>
+                <th width="8%">Date</th>
+                <th width="10%">Day</th>
+                {% for shift in shifts %}
+                    <th width="{% widthratio 82 shifts|length 1 %}%">
+                        {{ shift.code }}
+                        <span style="font-weight:normal;font-size:7px;display:block;color:#e0e0e0;">
+                            {{ shift.start_time|time:"H:i" }} - {{ shift.end_time|time:"H:i" }}
+                        </span>
+                    </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for date_str, assignments in assignments_by_date.items %}
+                <tr>
+                    <td class="day-header">
+                        {{ assignments.0.date|date:"d M" }}
+                    </td>
+                    <td class="day-header">
+                        {{ assignments.0.date|date:"D" }}
+                    </td>
+                    {% for shift in shifts %}
+                        <td>
+                            {% with shift_assignments=assignments|dictsort:"shift.id" %}
+                                {% for assignment in shift_assignments %}
+                                    {% if assignment.shift.id == shift.id %}
+                                        <div class="assignment-multiple">
+                                            {% if assignment.assigned_role == 15 %}
+                                                <!-- Dentist -->
+                                                <span class="assignment-dentist">
+                                                    🦷 {{ assignment.user.first_name|slice:":1" }}. {{ assignment.user.last_name }}
+                                                    <span class="role-badge role-badge-dentist">D</span>
+                                                </span>
+                                            {% elif assignment.assigned_role == 8 %}
+                                                <!-- Staff -->
+                                                <span class="assignment-staff">
+                                                    👤 {{ assignment.user.first_name|slice:":1" }}. {{ assignment.user.last_name }}
+                                                    <span class="role-badge role-badge-staff">S</span>
+                                                </span>
+                                            {% elif assignment.assigned_role == 20 %}
+                                                <!-- Admin -->
+                                                <span class="assignment-admin">
+                                                    ⚙️ {{ assignment.user.first_name|slice:":1" }}. {{ assignment.user.last_name }}
+                                                    <span class="role-badge" style="background:#b71c1c;color:white;">A</span>
+                                                </span>
+                                            {% else %}
+                                                <!-- Guest or other roles -->
+                                                <span class="assignment-guest">
+                                                    👤 {{ assignment.user.first_name|slice:":1" }}. {{ assignment.user.last_name }}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                {% empty %}
+                                    <span class="assignment-empty">—</span>
+                                {% endfor %}
+                            {% endwith %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="{{ shifts|length|add:2 }}" class="text-center" style="padding:30px;color:#999;">
+                        No assignments found for this roster week
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Detailed Assignments List -->
+    <div class="summary-section">
+        <h4 style="font-size:12px;color:#333;margin-bottom:10px;">Detailed Assignment List</h4>
+        <div class="summary-grid">
+            <div>
+                <h5 style="font-size:10px;color:#1976d2;margin-bottom:5px;">Dentists (Role: 15)</h5>
+                {% for dentist in dentists %}
+                    <div class="summary-item">
+                        <span>{{ dentist.get_full_name }}</span>
+                        <span class="text-muted">
+                            {{ roster_assignments|dictsort:"user.id"|selectattr:"user.id","equalto",dentist.id|selectattr:"assigned_role","equalto",15|length }} shifts
+                        </span>
+                    </div>
+                {% empty %}
+                    <div class="text-muted" style="font-size:9px;">No dentists assigned</div>
+                {% endfor %}
+            </div>
+            <div>
+                <h5 style="font-size:10px;color:#7b1fa2;margin-bottom:5px;">Staff (Role: 8)</h5>
+                {% for staff in staff_members %}
+                    <div class="summary-item">
+                        <span>{{ staff.get_full_name }}</span>
+                        <span class="text-muted">
+                            {{ roster_assignments|dictsort:"user.id"|selectattr:"user.id","equalto",staff.id|selectattr:"assigned_role","equalto",8|length }} shifts
+                        </span>
+                    </div>
+                {% empty %}
+                    <div class="text-muted" style="font-size:9px;">No staff assigned</div>
+                {% endfor %}
+            </div>
+            <div>
+                <h5 style="font-size:10px;color:#666;margin-bottom:5px;">Shift Distribution</h5>
+                {% for shift in shifts %}
+                    <div class="summary-item">
+                        <span>{{ shift.code }}</span>
+                        <span class="text-muted">
+                            {{ roster_assignments|dictsort:"shift.id"|selectattr:"shift.id","equalto",shift.id|length }} assignments
+                        </span>
+                    </div>
+                {% empty %}
+                    <div class="text-muted" style="font-size:9px;">No shifts defined</div>
+                {% endfor %}
+            </div>
+            <div>
+                <h5 style="font-size:10px;color:#666;margin-bottom:5px;">Role Summary</h5>
+                <div class="summary-item">
+                    <span>Dentists</span>
+                    <span class="text-muted">{{ dentists|length }}</span>
+                </div>
+                <div class="summary-item">
+                    <span>Staff</span>
+                    <span class="text-muted">{{ staff_members|length }}</span>
+                </div>
+                <div class="summary-item">
+                    <span>Total Personnel</span>
+                    <span class="text-muted">{{ users|length }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="footer-content">
+            <span>Beyond Health Dental Management System</span>
+            <span>Report: Roster Week {{ roster_week.start_date|date:"d M Y" }} - {{ roster_week.end_date|date:"d M Y" }}</span>
+            <span class="page-number"></span>
+        </div>
+    </div>
+</body>
+</html>

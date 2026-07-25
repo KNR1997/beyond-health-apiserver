@@ -12,7 +12,8 @@ class RosterAssignmentViewSet(BaseViewSet):
     serializer_class = RosterAssignmentListSerializer
 
     search_fields = []
-    filterset_fields = []
+    filterset_fields = ['date', 'user__id', 'user__role', 'shift']
+    ordering_fields = ['-created_at']
 
     def get_queryset(self):
         return (

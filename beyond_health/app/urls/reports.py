@@ -6,7 +6,7 @@ from beyond_health.app.views.report.dentist import DentistPdfView
 from beyond_health.app.views.report.patient_registration import PatientRegistrationPdfView
 from beyond_health.app.views.report.treatment_plans import TreatmentPlanPdfView
 from beyond_health.app.views.report.treatments import TreatmentPdfView
-from beyond_health.db.models import Appointment
+from beyond_health.app.views.report.roster import RosterPdfView
 
 urlpatterns = [
     path(
@@ -45,5 +45,9 @@ urlpatterns = [
         name="treatment-plan",
     ),
 
-
+    path(
+        "reports/roster/<uuid:pk>",
+        RosterPdfView.as_view(),
+        name="roster-report",
+    ),
 ]

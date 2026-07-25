@@ -2,6 +2,7 @@ from django.db import models
 from rest_framework.exceptions import ValidationError
 
 from beyond_health.db.models.base import BaseModel
+from beyond_health.app.permissions.base import ROLE
 
 
 class RosterWeek(BaseModel):
@@ -23,18 +24,16 @@ class RosterWeek(BaseModel):
 
 
 class RosterAssignment(models.Model):
-    ROLE_REQUIRED = (
-        ('DENTIST', 'Dentist'),
-        ('SUPPORT', 'Support'),
-    )
-
     roster_week = models.ForeignKey(
         RosterWeek, on_delete=models.CASCADE, related_name='assignments'
     )
     date = models.DateField()
     shift = models.ForeignKey('db.Shift', on_delete=models.PROTECT)
     user = models.ForeignKey('db.User', on_delete=models.PROTECT)
-    assigned_role = models.CharField(max_length=10, choices=ROLE_REQUIRED)
+    assigned_role = models.PositiveSmallIntegerField(
+        choices=[(r.value, r.name) for r in ROLE],
+        default=ROLE.GUEST.value,
+    )
 
     class Meta:
         unique_together = ('date', 'shift', 'user')
@@ -55,3 +54,7 @@ class RosterAssignment(models.Model):
 
     def __str__(self):
         return f"{self.date} - {self.shift} - {self.user}"
+
+    @property
+    def role_name(self) -> str:
+        return ROLE(self.assigned_role).name.lower()

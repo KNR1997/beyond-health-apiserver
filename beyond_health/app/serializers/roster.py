@@ -1,4 +1,7 @@
 from rest_framework import serializers
+from rest_framework.response import Response
+from rest_framework import status
+
 from django.db import transaction
 from beyond_health.app.permissions.base import ROLE
 
@@ -31,7 +34,8 @@ class RosterAssignmentListSerializer(serializers.ModelSerializer):
             'roster_week',
             'date',
             'shift',
-            'assigned_role',
+            # 'assigned_role',
+            'role_name',
             'user',
         ]
 
@@ -130,7 +134,7 @@ class RosterAssignmentCreateSerializer(serializers.Serializer):
                 user=user
             ).exists():
                 raise serializers.ValidationError({
-                    'non_field_errors': f'User {user} is already assigned to this date and shift.'
+                    'error': f'User {user} is already assigned to this date and shift.'
                 })
 
         return attrs
