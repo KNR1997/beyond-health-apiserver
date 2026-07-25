@@ -11,6 +11,7 @@ from .user import urlpatterns as user_urls
 from .appointment import urlpatterns as appointment_urls
 from .analytic import urlpatterns as analytic_urls
 from .reports import urlpatterns as reports_urls
+from .invoice import urlpatterns as invoice_urls
 
 urlpatterns = [
     *dentist_urls,
@@ -25,4 +26,5 @@ urlpatterns = [
     *appointment_urls,
     *analytic_urls,
     *reports_urls,
+    *invoice_urls,
 ]

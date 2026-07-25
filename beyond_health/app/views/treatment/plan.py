@@ -13,7 +13,7 @@ class TreatmentPlanViewSet(BaseViewSet):
     serializer_class = TreatmentPlanListSerializer
 
     search_fields = ["patient__name"]
-    filterset_fields = ['patient','dentist']
+    filterset_fields = ['patient','dentist', 'status']
 
     def get_queryset(self):
         return (
@@ -54,6 +54,15 @@ class TreatmentPlanViewSet(BaseViewSet):
     def update(self, request, *args, **kwargs):
         treatment_plan = TreatmentPlan.objects.get(pk=kwargs["pk"])
 
+        if treatment_plan.status == 'completed' or treatment_plan.status == 'cancelled':
+            return Response(
+                {
+                    "error": f"Cannot update a {treatment_plan.status} TreatmentPlan",
+                    "status": treatment_plan.status
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         serializer = TreatmentPlanSerializer(
             treatment_plan,
             data=request.data,
